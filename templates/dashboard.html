@@ -1,0 +1,585 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kelimelerim - WordMaster{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Kelimelerim</h1>
+    <div class="dashboard-actions">
+        <button class="btn btn-primary" id="addWordBtn">
+            <i class="fas fa-plus"></i> Yeni Kelime Ekle
+        </button>
+        <div class="search-container">
+            <input type="text" id="wordSearch" placeholder="Kelime ara...">
+            <button class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-book"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ words_count }}</h3>
+            <p>Toplam Kelime</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ mastered_count }}</h3>
+            <p>Öğrenilen</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ learning_count }}</h3>
+            <p>Öğreniliyor</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ streak_days }}</h3>
+            <p>Gün Serisi</p>
+        </div>
+    </div>
+</div>
+
+{% if words %}
+<div class="word-filters">
+    <button class="filter-btn active" data-filter="all">Tümü</button>
+    <button class="filter-btn" data-filter="learning">Öğreniliyor</button>
+    <button class="filter-btn" data-filter="mastered">Öğrenildi</button>
+</div>
+
+<div class="words-container">
+    {% for word in words %}
+    <div class="word-card" data-status="{{ word.status }}">
+        <div class="word-header">
+            <h3 class="word-text">{{ word.word }}</h3>
+            <div class="word-status {{ word.status }}">
+                {% if word.status == 'mastered' %}
+                <i class="fas fa-check-circle"></i> Öğrenildi
+                {% else %}
+                <i class="fas fa-clock"></i> Öğreniliyor
+                {% endif %}
+            </div>
+        </div>
+        <div class="word-details">
+            <p class="word-translation">{{ word.translation }}</p>
+            <p class="word-example">{{ word.example }}</p>
+        </div>
+        <div class="word-actions">
+            <button class="btn-icon edit-word" data-id="{{ word.id }}">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-icon delete-word" data-id="{{ word.id }}">
+                <i class="fas fa-trash"></i>
+            </button>
+            {% if word.status != 'mastered' %}
+            <button class="btn-icon mark-mastered" data-id="{{ word.id }}">
+                <i class="fas fa-check"></i>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <img src="/static/images/empty-state.svg" alt="Henüz kelime eklenmemiş">
+    <h2>Henüz kelime eklenmemiş</h2>
+    <p>Kelime haznenizi oluşturmak için yeni kelimeler ekleyin.</p>
+    <button class="btn btn-primary" id="emptyStateAddBtn">
+        <i class="fas fa-plus"></i> İlk Kelimeni Ekle
+    </button>
+</div>
+{% endif %}
+
+<!-- Add Word Modal -->
+<div class="modal" id="addWordModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Yeni Kelime Ekle</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addWordForm" method="post" action="{% url 'add_word' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="word">İngilizce Kelime</label>
+                    <input type="text" id="word" name="word" required>
+                </div>
+                <div class="form-group">
+                    <label for="translation">Türkçe Anlamı</label>
+                    <input type="text" id="translation" name="translation" required>
+                </div>
+                <div class="form-group">
+                    <label for="example">Örnek Cümle (İsteğe bağlı)</label>
+                    <textarea id="example" name="example" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline cancel-modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .dashboard-header h1 {
+        margin-bottom: 0;
+        color: var(--dark);
+    }
+    
+    .dashboard-actions {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+    
+    .search-container {
+        position: relative;
+        width: 250px;
+    }
+    
+    .search-container input {
+        padding-right: 40px;
+        margin-bottom: 0;
+    }
+    
+    .search-btn {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--gray);
+        cursor: pointer;
+        padding: 8px;
+        transition: color 0.3s ease;
+    }
+    
+    .search-btn:hover {
+        color: var(--primary);
+    }
+    
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background-color: rgba(28, 176, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+    
+    .stat-info h3 {
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+        color: var(--dark);
+    }
+    
+    .stat-info p {
+        margin-bottom: 0;
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+    
+    .word-filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+    
+    .filter-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        background-color: var(--light-gray);
+        color: var(--dark);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn:hover {
+        background-color: rgba(28, 176, 246, 0.1);
+        color: var(--primary);
+    }
+    
+    .filter-btn.active {
+        background-color: var(--primary);
+        color: var(--white);
+    }
+    
+    .words-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .word-card {
+        background-color: var(--white);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-top: 4px solid var(--primary);
+    }
+    
+    .word-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    }
+    
+    .word-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .word-text {
+        font-size: 1.3rem;
+        margin-bottom: 0;
+        color: var(--dark);
+    }
+    
+    .word-status {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .word-status.mastered {
+        background-color: rgba(88, 204, 2, 0.1);
+        color: var(--secondary-dark);
+    }
+    
+    .word-status.learning {
+        background-color: rgba(255, 150, 0, 0.1);
+        color: #d27d00;
+    }
+    
+    .word-details {
+        margin-bottom: 15px;
+    }
+    
+    .word-translation {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+        color: var(--dark);
+    }
+    
+    .word-example {
+        font-style: italic;
+        color: var(--gray);
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+    
+    .word-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: var(--light-gray);
+        color: var(--dark);
+    }
+    
+    .btn-icon:hover {
+        transform: translateY(-3px);
+    }
+    
+    .edit-word:hover {
+        background-color: rgba(28, 176, 246, 0.1);
+        color: var(--primary);
+    }
+    
+    .delete-word:hover {
+        background-color: rgba(255, 75, 75, 0.1);
+        color: var(--danger);
+    }
+    
+    .mark-mastered:hover {
+        background-color: rgba(88, 204, 2, 0.1);
+        color: var(--secondary);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .empty-state img {
+        max-width: 200px;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state h2 {
+        margin-bottom: 10px;
+        color: var(--dark);
+    }
+    
+    .empty-state p {
+        color: var(--gray);
+        margin-bottom: 20px;
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background-color: var(--white);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: modalSlideIn 0.3s ease forwards;
+    }
+    
+    @keyframes modalSlideIn {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    .modal-header {
+        padding: 20px;
+        border-bottom: 1px solid var(--light-gray);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h2 {
+        margin-bottom: 0;
+        font-size: 1.5rem;
+    }
+    
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray);
+        transition: color 0.3s ease;
+    }
+    
+    .close-modal:hover {
+        color: var(--danger);
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .dashboard-actions {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        
+        .search-container {
+            width: 100%;
+        }
+        
+        .words-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal functionality
+        const addWordBtn = document.getElementById('addWordBtn');
+        const emptyStateAddBtn = document.getElementById('emptyStateAddBtn');
+        const addWordModal = document.getElementById('addWordModal');
+        const closeModalBtn = document.querySelector('.close-modal');
+        const cancelModalBtn = document.querySelector('.cancel-modal');
+        
+        function openModal() {
+            addWordModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() {
+            addWordModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        if (addWordBtn) {
+            addWordBtn.addEventListener('click', openModal);
+        }
+        
+        if (emptyStateAddBtn) {
+            emptyStateAddBtn.addEventListener('click', openModal);
+        }
+        
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModal);
+        }
+        
+        if (cancelModalBtn) {
+            cancelModalBtn.addEventListener('click', closeModal);
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === addWordModal) {
+                closeModal();
+            }
+        });
+        
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const wordCards = document.querySelectorAll('.word-card');
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                
+                // Show/hide word cards based on filter
+                wordCards.forEach(card => {
+                    if (filter === 'all' || card.getAttribute('data-status') === filter) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Search functionality
+        const searchInput = document.getElementById('wordSearch');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                wordCards.forEach(card => {
+                    const wordText = card.querySelector('.word-text').textContent.toLowerCase();
+                    const wordTranslation = card.querySelector('.word-translation').textContent.toLowerCase();
+                    
+                    if (wordText.includes(searchTerm) || wordTranslation.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

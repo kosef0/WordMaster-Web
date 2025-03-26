@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz - WordMaster{% endblock %}
+
+{% block content %}
+<div class="quiz-container">
+    <div class="quiz-header">
+        <h2>Kelime Bilgini Test Et</h2>
+        <p>Öğrendiğin kelimeleri pekiştirmek için quiz çöz.</p>
+    </div>
+    
+    <div id="quiz-app">
+        <!-- Quiz Loading State -->
+        <div id="quiz-loading" class="quiz-loading">
+            <div class="loading"></div>
+            <p>Quiz hazırlanıyor...</p>
+        </div>
+        
+        <!-- Quiz Questions -->
+        <div id="quiz-questions" class="quiz-questions" style="display: none;">
+            <div class="quiz-progress">
+                <div class="progress-text">Soru <span id="current-question">1</span>/<span id="total-questions">10</span></div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" style="width: 10%;"></div>
+                </div>
+            </div>
+            
+            <div class="quiz-question card">
+                <h3 class="question-text" id="question-text">Bu kelimenin Türkçe karşılığı nedir?</h3>
+                <div class="question-word" id="question-word">example</div>
+                
+                <ul class="options-list" id="options-list">
+                    <!-- Options will be dynamically inserted here -->
+                </ul>
+            </div>
+            
+            <div class="quiz-navigation">
+                <button id="next-question" class="btn btn-primary">Sonraki Soru</button>
+            </div>
+        </div>
+        
+        <!-- Quiz Results -->
+        <div id="quiz-results" class="quiz-results" style="display: none;">
+            <h3>Quiz Tamamlandı!</h3>
+            
+            <div class="score-container">
+                <div class="score" id="quiz-score">85%</div>
+                <p>Doğru: <span id="correct-count">8</span>/<span id="total-count">10</span></p>
+            </div>
+            
+            <div class="results-actions">
+                <a href="/quiz/new/" class="btn btn-primary">Yeni Quiz</a>
+                <a href="/dashboard/" class="btn btn-secondary">Dashboard'a Dön</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Quiz data will be loaded from API
+        let quizData = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        
+        // Elements
+        const loadingSection = document.getElementById('quiz-loading');
+        const questionsSection = document.getElementById('quiz-questions');
+        const resultsSection = document.getElementById('quiz-results');
+        const questionText = document.getElementById('question-text');
+        const questionWord = document.getElementById('question-word');
+        const optionsList = document.getElementById('options-list');
+        const nextButton = document.getElementById('next-question');
+        const currentQuestionEl = document.getElementById('current-question');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const progressBarFill = document.querySelector('.progress-bar-fill');
+        
+        // Initialize quiz
+        initQuiz();
+        
+        function initQuiz() {
+            // In a real app, this would be an API call
+            setTimeout(() => {
+                // Simulate API response
+                quizData = {
+                    id: 1,
+                    questions: [
+                        {
+                            id: 1,
+                            word: { english: 'apple', turkish: 'elma' },
+                            options: ['elma', 'armut', 'muz', 'çilek']
+                        },
+                        {
+                            id: 2,
+                            word: { english: 'book', turkish: 'kitap' },
+                            options: ['kalem', 'kitap', 'defter', 'silgi']
+                        },
+                        {
+                            id: 3,
+                            word: { english: 'house', turkish: 'ev' },
+                            options: ['araba', 'ev', 'okul', 'park']
+                        },
+                        // More questions would be here
+                    ]
+                };
+                
+                totalQuestionsEl.textContent = quizData.questions.length;
+                
+                // Show questions section
+                loadingSection.style.display = 'none';
+                questionsSection.style.display = 'block';
+                
+                // Load first question
+                loadQuestion(0);
+            }, 1500); // Simulate loading time
+        }
+        
+        function loadQuestion(index) {
+            const question = quizData.questions[index];
+            
+            // Update progress
+            currentQuestionIndex = index;
+            currentQuestionEl.textContent = index + 1;
+            const progressPercentage = ((index + 1) / quizData.questions.length) * 100;
+            progressBarFill.style.width = `${progressPercentage}%`;
+            
+            // Set question content
+            questionWord.textContent = question.word.english;
+            
+            // Clear previous options
+            optionsList.innerHTML = '';
+            
+            // Add options
+            question.options.forEach((option, i) => {
+                const li = document.createElement('li');
+                li.className = 'option-item';
+                li.innerHTML = `
+                    <label class="option-label">
+                        <input type="radio" name="answer" class="option-input" value="${option}">
+                        ${option}
+                    </label>
+                `;
+                optionsList.appendChild(li);
+            });
+            
+            // Disable next button until an option is selected
+            nextButton.disabled = true;
+            
+            // Add event listeners to options
+            const optionInputs = document.querySelectorAll('.option-input');
+            optionInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    nextButton.disabled = false;
+                });
+            });
+        }
+        
+        // Next button click handler
+        nextButton.addEventListener('click', function() {
+            // Get selected answer
+            const selectedOption = document.querySelector('input[name="answer"]:checked');
+            if (!selectedOption) return;
+            
+            // Save answer
+            userAnswers.push({
+                questionId: quizData.questions[currentQuestionIndex].id,
+                answer: selectedOption.value,
+                isCorrect: selectedOption.value === quizData.questions[currentQuestionIndex].word.turkish
+            });
+            
+            // Move to next question or show results
+            if (currentQuestionIndex < quizData.questions.length - 1) {
+                loadQuestion(currentQuestionIndex + 1);
+            } else {
+                showResults();
+            }
+        });
+        
+        function showResults() {
+            // Calculate score
+            const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
+            const totalQuestions = quizData.questions.length;
+            const scorePercentage = Math.round((correctAnswers / totalQuestions) * 100);
+            
+            // Update results elements
+            document.getElementById('quiz-score').textContent = `${scorePercentage}%`;
+            document.getElementById('correct-count').textContent = correctAnswers;
+            document.getElementById('total-count').textContent = totalQuestions;
+            
+            // Show results section
+            questionsSection.style.display = 'none';
+            resultsSection.style.display = 'block';
+            
+            // In a real app, this would be an API call to save results
+            console.log('Quiz completed', {
+                quizId: quizData.id,
+                score: scorePercentage,
+                answers: userAnswers
+            });
+        }
+    });
+</script>
+{% endblock %}

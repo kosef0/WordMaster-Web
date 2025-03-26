@@ -1,0 +1,735 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WordMaster - İngilizce Kelime Öğrenme{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Base CSS -->
+    <style>
+        :root {
+            --primary: #1cb0f6;
+            --primary-dark: #0095d9;
+            --secondary: #58cc02;
+            --secondary-dark: #46a302;
+            --accent: #ff9600;
+            --danger: #ff4b4b;
+            --dark: #4b4b4b;
+            --gray: #afafaf;
+            --light-gray: #e5e5e5;
+            --white: #ffffff;
+            --background: #f7f7f7;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--background);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles - Enhanced */
+        header {
+            background-color: var(--white);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo img {
+            height: 45px;
+            margin-right: 12px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+        
+        .logo-text {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            letter-spacing: -0.5px;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 35px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 700;
+            font-size: 1.15rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+        
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+        
+        .nav-links a.active {
+            color: var(--primary);
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 1rem;
+            font-family: 'Nunito', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1), 0 4px 10px rgba(28, 176, 246, 0.3);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.1), 0 6px 15px rgba(28, 176, 246, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1), 0 2px 5px rgba(28, 176, 246, 0.2);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--white);
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1), 0 4px 10px rgba(88, 204, 2, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.1), 0 6px 15px rgba(88, 204, 2, 0.4);
+        }
+        
+        .btn-secondary:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1), 0 2px 5px rgba(88, 204, 2, 0.2);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: 0 4px 10px rgba(28, 176, 246, 0.1);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(28, 176, 246, 0.2);
+        }
+        
+        .btn-outline:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 5px rgba(28, 176, 246, 0.1);
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .mobile-menu-btn:hover {
+            color: var(--primary);
+        }
+        
+        /* Main Content - Enhanced */
+        main {
+            min-height: calc(100vh - 180px);
+            padding: 40px 0 60px;
+        }
+        
+        /* Alert Messages - New */
+        .messages {
+            margin-bottom: 30px;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            animation: slideIn 0.5s ease forwards;
+            transition: opacity 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .alert-success {
+            background-color: rgba(88, 204, 2, 0.1);
+            border-left: 4px solid var(--secondary);
+            color: var(--secondary-dark);
+        }
+        
+        .alert-info {
+            background-color: rgba(28, 176, 246, 0.1);
+            border-left: 4px solid var(--primary);
+            color: var(--primary-dark);
+        }
+        
+        .alert-warning {
+            background-color: rgba(255, 150, 0, 0.1);
+            border-left: 4px solid var(--accent);
+            color: #d27d00;
+        }
+        
+        .alert-error {
+            background-color: rgba(255, 75, 75, 0.1);
+            border-left: 4px solid var(--danger);
+            color: #d13030;
+        }
+        
+        /* Footer Styles - Enhanced */
+        footer {
+            background-color: var(--white);
+            padding: 60px 0 40px;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 40px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            color: var(--dark);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+        
+        .footer-column p {
+            color: var(--gray);
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+        
+        .footer-links a {
+            text-decoration: none;
+            color: var(--gray);
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            color: var(--dark);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .social-links a:hover {
+            background-color: var(--primary);
+            color: var(--white);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(28, 176, 246, 0.3);
+        }
+        
+        .footer-bottom {
+            margin-top: 50px;
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.95rem;
+            padding-top: 30px;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        /* Mobile Menu - Enhanced */
+        .mobile-menu {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            background-color: var(--white);
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 99;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+        }
+        
+        .mobile-menu.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .mobile-menu a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 1.2rem;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--light-gray);
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu a:hover {
+            color: var(--primary);
+            padding-left: 10px;
+        }
+        
+        .mobile-menu a:last-child {
+            border-bottom: none;
+        }
+        
+        .mobile-auth {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        /* Content Wrapper */
+        .content-wrapper {
+            background-color: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        /* Improve spacing between elements */
+        h1, h2, h3, h4, h5, h6 {
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        
+        p {
+            margin-bottom: 16px;
+            line-height: 1.7;
+        }
+        
+        /* Add space between sections */
+        section {
+            margin-bottom: 40px;
+        }
+        
+        /* Improve form elements spacing */
+        input, select, textarea {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--light-gray);
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(28, 176, 246, 0.2);
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        /* Table improvements */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        th {
+            background-color: rgba(28, 176, 246, 0.1);
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover td {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+        
+        /* Card style for content blocks */
+        .card {
+            background-color: var(--white);
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        /* Grid layout for content */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        /* Improve list styling */
+        ul:not(.nav-links):not(.footer-links), 
+        ol {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        ul:not(.nav-links):not(.footer-links) li, 
+        ol li {
+            margin-bottom: 10px;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .nav-links, .auth-buttons {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .navbar {
+                padding: 15px 0;
+            }
+            
+            .logo img {
+                height: 38px;
+            }
+            
+            .logo-text {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+    
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="{% url 'home' %}" class="logo">
+                    <img src="{% static 'images/logo.png' %}" alt="WordMaster Logo">
+                    <span class="logo-text">WordMaster</span>
+                </a>
+                
+                <ul class="nav-links">
+                    <li><a href="{% url 'home' %}" {% if request.path == '/' %}class="active"{% endif %}>Ana Sayfa</a></li>
+                    <li><a href="{% url 'dashboard' %}" {% if 'dashboard' in request.path %}class="active"{% endif %}>Kelimelerim</a></li>
+                    <li><a href="#" {% if 'flashcards' in request.path %}class="active"{% endif %}>Kelime Kartları</a></li>
+                    <li><a href="#" {% if 'quiz' in request.path %}class="active"{% endif %}>Quiz</a></li>
+                </ul>
+                
+                <div class="auth-buttons">
+                    {% if user.is_authenticated %}
+                        <div class="user-menu">
+                            <a href="#" class="btn btn-outline">
+                                <i class="fas fa-user-circle"></i> {{ user.username }}
+                            </a>
+                            <a href="{% url 'logout' %}" class="btn btn-primary">Çıkış Yap</a>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline">Giriş Yap</a>
+                        <a href="{% url 'register' %}" class="btn btn-primary">Kaydol</a>
+                    {% endif %}
+                </div>
+                
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+        
+        <div class="mobile-menu">
+            <a href="{% url 'home' %}">Ana Sayfa</a>
+            <a href="{% url 'dashboard' %}">Kelimelerim</a>
+            <a href="#">Kelime Kartları</a>
+            <a href="#">Quiz</a>
+            
+            <div class="mobile-auth">
+                {% if user.is_authenticated %}
+                    <a href="#" class="btn btn-outline">
+                        <i class="fas fa-user-circle"></i> {{ user.username }}
+                    </a>
+                    <a href="{% url 'logout' %}" class="btn btn-primary">Çıkış Yap</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-outline">Giriş Yap</a>
+                    <a href="{% url 'register' %}" class="btn btn-primary">Kaydol</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <div class="container">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="content-wrapper">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>WordMaster</h3>
+                    <p>İngilizce kelime öğrenmenin en etkili ve eğlenceli yolu. Günlük pratiklerle kelime haznenizi geliştirin.</p>
+                    
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Hızlı Erişim</h3>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'home' %}">Ana Sayfa</a></li>
+                        <li><a href="{% url 'dashboard' %}">Kelimelerim</a></li>
+                        <li><a href="#">Kelime Kartları</a></li>
+                        <li><a href="#">Quiz</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Destek</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Yardım Merkezi</a></li>
+                        <li><a href="#">Sıkça Sorulan Sorular</a></li>
+                        <li><a href="#">İletişim</a></li>
+                        <li><a href="#">Geri Bildirim</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Yasal</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Kullanım Koşulları</a></li>
+                        <li><a href="#">Gizlilik Politikası</a></li>
+                        <li><a href="#">Çerez Politikası</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; {% now "Y" %} WordMaster. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('active');
+                    
+                    if (mobileMenu.classList.contains('active')) {
+                        mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    } else {
+                        mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+                    }
+                });
+            }
+            
+            // Auto-hide messages after 5 seconds
+            const messages = document.querySelectorAll('.alert');
+            if (messages.length > 0) {
+                setTimeout(function() {
+                    messages.forEach(function(message) {
+                        message.style.opacity = '0';
+                        setTimeout(function() {
+                            message.style.display = 'none';
+                        }, 300);
+                    });
+                }, 5000);
+            }
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,641 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}WordMaster - İngilizce Kelime Öğrenme{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">İngilizce Kelime Öğrenmenin En Etkili Yolu</h1>
+        <p class="hero-description">WordMaster ile kişiselleştirilmiş öğrenme deneyimi, interaktif quizler ve akıllı tekrar sistemi sayesinde İngilizce kelime dağarcığınızı hızla geliştirin.</p>
+        <div class="hero-buttons">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Hemen Başla</a>
+            <a href="#features" class="btn btn-outline btn-lg">Özelliklerimiz</a>
+        </div>
+    </div>
+    <div class="hero-image">
+        <img src="{% static 'images/hero-image.png' %}" alt="WordMaster App">
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="features">
+    <div class="section-header">
+        <h2>Özelliklerimiz</h2>
+        <div class="section-divider"></div>
+    </div>
+    
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h3>Kişiselleştirilmiş Öğrenme</h3>
+            <p>Seviyenize ve ilgi alanlarınıza göre özelleştirilmiş kelime listeleri ile daha etkili öğrenin.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <h3>İnteraktif Quizler</h3>
+            <p>Eğlenceli ve çeşitli quiz formatları ile öğrendiklerinizi pekiştirin ve ilerleyişinizi takip edin.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h3>Akıllı Tekrar Sistemi</h3>
+            <p>Bilimsel aralıklı tekrar yöntemi ile öğrendiğiniz kelimeleri uzun süreli hafızanıza yerleştirin.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats">
+    <div class="stat-item">
+        <div class="stat-number">10,000+</div>
+        <div class="stat-label">Kelime</div>
+    </div>
+    
+    <div class="stat-item">
+        <div class="stat-number">5,000+</div>
+        <div class="stat-label">Kullanıcı</div>
+    </div>
+    
+    <div class="stat-item">
+        <div class="stat-number">98%</div>
+        <div class="stat-label">Memnuniyet</div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="cta-content">
+        <h2>Ücretsiz Hesap Oluşturun ve Hemen Öğrenmeye Başlayın</h2>
+        <p>Günde sadece 15 dakika ayırarak İngilizce kelime dağarcığınızı hızla geliştirin.</p>
+        <a href="{% url 'register' %}" class="btn btn-secondary btn-lg">Hemen Kayıt Ol</a>
+    </div>
+    <div class="cta-image">
+        <img src="{% static 'images/cta-image.png' %}" alt="WordMaster App">
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works">
+    <div class="section-header">
+        <h2>Nasıl Çalışır?</h2>
+        <div class="section-divider"></div>
+    </div>
+    
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h3>Hesap Oluşturun</h3>
+                <p>Ücretsiz hesabınızı oluşturun ve seviyenizi belirleyin.</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h3>Kelimeleri Öğrenin</h3>
+                <p>Size özel hazırlanan kelime listelerini öğrenmeye başlayın.</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h3>Pratik Yapın</h3>
+                <p>Quizler ve alıştırmalarla öğrendiklerinizi pekiştirin.</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h3>İlerlemenizi Takip Edin</h3>
+                <p>Detaylı istatistiklerle gelişiminizi görün ve motivasyonunuzu koruyun.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials">
+    <div class="section-header">
+        <h2>Kullanıcılarımız Ne Diyor?</h2>
+        <div class="section-divider"></div>
+    </div>
+    
+    <div class="testimonials-slider">
+        <div class="testimonial">
+            <div class="testimonial-content">
+                <p>"WordMaster sayesinde 3 ayda 500'den fazla kelime öğrendim. Artık İngilizce konuşurken kendime daha çok güveniyorum."</p>
+            </div>
+            <div class="testimonial-author">
+                <img src="{% static 'images/user1.jpg' %}" alt="Ahmet Y.">
+                <div>
+                    <h4>Ahmet Y.</h4>
+                    <p>Üniversite Öğrencisi</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial">
+            <div class="testimonial-content">
+                <p>"Akıllı tekrar sistemi gerçekten işe yarıyor. Öğrendiğim kelimeleri artık unutmuyorum ve daha hızlı hatırlıyorum."</p>
+            </div>
+            <div class="testimonial-author">
+                <img src="{% static 'images/user2.jpg' %}" alt="Zeynep K.">
+                <div>
+                    <h4>Zeynep K.</h4>
+                    <p>İngilizce Öğretmeni</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial">
+            <div class="testimonial-content">
+                <p>"Diğer uygulamaları da denedim ama WordMaster'ın kişiselleştirilmiş yaklaşımı benim için en iyisi oldu."</p>
+            </div>
+            <div class="testimonial-author">
+                <img src="{% static 'images/user3.jpg' %}" alt="Mehmet A.">
+                <div>
+                    <h4>Mehmet A.</h4>
+                    <p>Yazılım Geliştirici</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA -->
+<section class="final-cta">
+    <h2>Kelime Haznenizi Geliştirmeye Bugün Başlayın</h2>
+    <p>WordMaster ile İngilizce kelime öğrenmek hiç bu kadar kolay ve eğlenceli olmamıştı.</p>
+    <a href="{% url 'register' %}" class="btn btn-primary btn-lg pulse">Ücretsiz Kayıt Ol</a>
+</section>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* Hero Section */
+    .hero {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        margin-bottom: 60px;
+        min-height: 500px;
+    }
+    
+    .hero-content {
+        flex: 1;
+    }
+    
+    .hero-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: var(--dark);
+        margin-bottom: 20px;
+        line-height: 1.2;
+        background: linear-gradient(to right, var(--primary), var(--secondary));
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .hero-description {
+        font-size: 1.2rem;
+        color: var(--gray);
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .hero-buttons {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .btn-lg {
+        padding: 14px 28px;
+        font-size: 1.1rem;
+    }
+    
+    .hero-image {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .hero-image img {
+        max-width: 100%;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        transform: perspective(1000px) rotateY(-5deg);
+        transition: transform 0.5s ease;
+    }
+    
+    .hero-image img:hover {
+        transform: perspective(1000px) rotateY(0deg);
+    }
+    
+    /* Section Header */
+    .section-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    
+    .section-header h2 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--dark);
+        margin-bottom: 15px;
+    }
+    
+    .section-divider {
+        height: 4px;
+        width: 60px;
+        background: linear-gradient(to right, var(--primary), var(--secondary));
+        margin: 0 auto;
+        border-radius: 2px;
+    }
+    
+    /* Features Section */
+    .features {
+        padding: 60px 0;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+    }
+    
+    .feature-card {
+        background-color: var(--white);
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2rem;
+        color: var(--white);
+    }
+    
+    .feature-card h3 {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+        color: var(--dark);
+    }
+    
+    .feature-card p {
+        color: var(--gray);
+        line-height: 1.6;
+    }
+    
+    /* Stats Section */
+    .stats {
+        display: flex;
+        justify-content: space-around;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        padding: 60px 0;
+        border-radius: 16px;
+        margin: 60px 0;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-item {
+        text-align: center;
+        color: var(--white);
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stat-label {
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* CTA Section */
+    .cta {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        background-color: var(--white);
+        border-radius: 16px;
+        padding: 60px;
+        margin: 60px 0;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
+    }
+    
+    .cta-content {
+        flex: 1;
+    }
+    
+    .cta-content h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--dark);
+        margin-bottom: 20px;
+        line-height: 1.3;
+    }
+    
+    .cta-content p {
+        font-size: 1.1rem;
+        color: var(--gray);
+        margin-bottom: 30px;
+    }
+    
+    .cta-image {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .cta-image img {
+        max-width: 100%;
+        border-radius: 16px;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* How It Works */
+    .how-it-works {
+        padding: 60px 0;
+    }
+    
+    .steps {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .step {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+    }
+    
+    .step-number {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--white);
+        flex-shrink: 0;
+    }
+    
+    .step-content h3 {
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+        color: var(--dark);
+    }
+    
+    .step-content p {
+        color: var(--gray);
+    }
+    
+    /* Testimonials */
+    .testimonials {
+        padding: 60px 0;
+    }
+    
+    .testimonials-slider {
+        display: flex;
+        gap: 30px;
+        overflow-x: auto;
+        padding: 20px 0;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none; /* Firefox */
+    }
+    
+    .testimonials-slider::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+    
+    .testimonial {
+        flex: 0 0 calc(33.333% - 20px);
+        min-width: 300px;
+        background-color: var(--white);
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        scroll-snap-align: start;
+    }
+    
+    .testimonial-content {
+        margin-bottom: 20px;
+    }
+    
+    .testimonial-content p {
+        font-style: italic;
+        color: var(--dark);
+        line-height: 1.6;
+    }
+    
+    .testimonial-author {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .testimonial-author img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .testimonial-author h4 {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        color: var(--dark);
+    }
+    
+    .testimonial-author p {
+        font-size: 0.9rem;
+        color: var(--gray);
+    }
+    
+    /* Final CTA */
+    .final-cta {
+        text-align: center;
+        padding: 80px 0;
+        background: linear-gradient(135deg, rgba(28, 176, 246, 0.1), rgba(88, 204, 2, 0.1));
+        border-radius: 16px;
+        margin-bottom: 40px;
+    }
+    
+    .final-cta h2 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--dark);
+        margin-bottom: 20px;
+    }
+    
+    .final-cta p {
+        font-size: 1.2rem;
+        color: var(--gray);
+        margin-bottom: 30px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Pulse Animation for CTA Button */
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 15px rgba(88, 204, 2, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(88, 204, 2, 0);
+        }
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 992px) {
+        .hero {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .hero-buttons {
+            justify-content: center;
+        }
+        
+        .cta {
+            flex-direction: column;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .stats {
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .step {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.2rem;
+        }
+        
+        .section-header h2 {
+            font-size: 1.8rem;
+        }
+        
+        .cta-content h2 {
+            font-size: 1.6rem;
+        }
+        
+        .final-cta h2 {
+            font-size: 1.8rem;
+        }
+        
+        .testimonial {
+            flex: 0 0 calc(100% - 40px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Simple auto-scroll for testimonials
+        const testimonialsSlider = document.querySelector('.testimonials-slider');
+        let scrollAmount = 0;
+        const scrollStep = 1;
+        const scrollDelay = 30;
+        let scrollInterval;
+        
+        function startAutoScroll() {
+            scrollInterval = setInterval(function() {
+                testimonialsSlider.scrollLeft += scrollStep;
+                scrollAmount += scrollStep;
+                
+                if (scrollAmount >= testimonialsSlider.scrollWidth - testimonialsSlider.clientWidth) {
+                    scrollAmount = 0;
+                    testimonialsSlider.scrollLeft = 0;
+                }
+            }, scrollDelay);
+        }
+        
+        function stopAutoScroll() {
+            clearInterval(scrollInterval);
+        }
+        
+        if (testimonialsSlider) {
+            startAutoScroll();
+            
+            testimonialsSlider.addEventListener('mouseenter', stopAutoScroll);
+            testimonialsSlider.addEventListener('mouseleave', startAutoScroll);
+            testimonialsSlider.addEventListener('touchstart', stopAutoScroll);
+            testimonialsSlider.addEventListener('touchend', startAutoScroll);
+        }
+    });
+</script>
+{% endblock %}

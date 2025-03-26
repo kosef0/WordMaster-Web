@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}Kelimelerim - WordMaster{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>Kelimelerim</h1>
+    <div class="dashboard-actions">
+        <button class="btn btn-primary" id="addWordBtn">
+            <i class="fas fa-plus"></i> Yeni Kelime Ekle
+        </button>
+        <div class="search-container">
+            <input type="text" id="wordSearch" placeholder="Kelime ara...">
+            <button class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-book"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ words_count }}</h3>
+            <p>Toplam Kelime</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ mastered_count }}</h3>
+            <p>Öğrenilen</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ learning_count }}</h3>
+            <p>Öğreniliyor</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ streak_days }}</h3>
+            <p>Gün Serisi</p>
+        </div>
+    </div>
+</div>
+
+<div class="word-actions">
+    <a href="{% url 'flashcards' %}" class="btn btn-outline">
+        <i class="fas fa-clone"></i> Flashcards
+    </a>
+    <a href="{% url 'quiz' %}" class="btn btn-outline">
+        <i class="fas fa-question-circle"></i> Quiz
+    </a>
+    <a href="{% url 'stats' %}" class="btn btn-outline">
+        <i class="fas fa-chart-bar"></i> İstatistikler
+    </a>
+</div>
+
+{% if words %}
+<div class="word-filters">
+    <button class="filter-btn active" data-filter="all">Tümü</button>
+    <button class="filter-btn" data-filter="learning">Öğreniliyor</button>
+    <button class="filter-btn" data-filter="mastered">Öğrenildi</button>
+</div>
+
+<div class="words-container">
+    {% for word in words %}
+    <div class="word-card" data-status="{{ word.status }}">
+        <div class="word-header">
+            <h3 class="word-text">{{ word.word }}</h3>
+            <div class="word-status {{ word.status }}">
+                {% if word.status == 'mastered' %}
+                <i class="fas fa-check-circle"></i> Öğrenildi
+                {% else %}
+                <i class="fas fa-clock"></i> Öğreniliyor
+                {% endif %}
+            </div>
+        </div>
+        <div class="word-details">
+            <p class="word-translation">{{ word.translation }}</p>
+            {% if word.example %}
+            <p class="word-example">{{ word.example }}</p>
+            {% endif %}
+        </div>
+        <div class="word-actions">
+            <a href="{% url 'edit_word' word.id %}" class="btn-icon edit-word">
+                <i class="fas fa-edit"></i>
+            </a>
+            <a href="{% url 'delete_word' word.id %}" class="btn-icon delete-word">
+                <i class="fas fa-trash"></i>
+            </a>
+            {% if word.status != 'mastered' %}
+            <form method="post" action="{% url 'mark_word_mastered' word.id %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn-icon mark-mastered">
+                    <i class="fas fa-check"></i>
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <img src="/static/images/empty-state.svg" alt="Henüz kelime eklenmemiş">
+    <h2>Henüz kelime eklenmemiş</h2>
+    <p>Kelime haznenizi oluşturmak için yeni kelimeler ekleyin.</p>
+    <button class="btn btn-primary" id="emptyStateAddBtn">
+        <i class="fas fa-plus"></i> İlk Kelimeni Ekle
+    </button>
+</div>
+{% endif %}
+
+<!-- Add Word Modal -->
+<div class="modal" id="addWordModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Yeni Kelime Ekle</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addWordForm" method="post" action="{% url 'add_word' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="word">İngilizce Kelime</label>
+                    <input type="text" id="word" name="word" required>
+                </div>
+                <div class="form-group">
+                    <label for="translation">Türkçe Anlamı</label>
+                    <input type="text" id="translation" name="translation" required>
+                </div>
+                <div class="form-group">
+                    <label for="example">Örnek Cümle (İsteğe bağlı)</label>
+                    <textarea id="example" name="example" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline cancel-modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal functionality
+        const addWordBtn = document.getElementById('addWordBtn');
+        const emptyStateAddBtn = document.getElementById('emptyStateAddBtn');
+        const addWordModal = document.getElementById('addWordModal');
+        const closeModalBtn = document.querySelector('.close-modal');
+        const cancelModalBtn = document.querySelector('.cancel-modal');
+        
+        function openModal() {
+            addWordModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() {
+            addWordModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        if (addWordBtn) {
+            addWordBtn.addEventListener('click', openModal);
+        }
+        
+        if (emptyStateAddBtn) {
+            emptyStateAddBtn.addEventListener('click', openModal);
+        }
+        
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModal);
+        }
+        
+        if (cancelModalBtn) {
+            cancelModalBtn.addEventListener('click', closeModal);
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === addWordModal) {
+                closeModal();
+            }
+        });
+        
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const wordCards = document.querySelectorAll('.word-card');
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                
+                // Show/hide word cards based on filter
+                wordCards.forEach(card => {
+                    if (filter === 'all' || card.getAttribute('data-status') === filter) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Search functionality
+        const searchInput = document.getElementById('wordSearch');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                wordCards.forEach(card => {
+                    const wordText = card.querySelector('.word-text').textContent.toLowerCase();
+                    const wordTranslation = card.querySelector('.word-translation').textContent.toLowerCase();
+                    
+                    if (wordText.includes(searchTerm) || wordTranslation.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
