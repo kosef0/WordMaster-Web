@@ -1,0 +1,32 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Hesap Kilitlendi - WordMaster{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-lock text-danger" style="font-size: 5rem;"></i>
+                    </div>
+                    <h2 class="mb-4">Hesap Geçici Olarak Kilitlendi</h2>
+                    <p class="lead mb-4">Çok fazla başarısız giriş denemesi nedeniyle hesabınıza erişim geçici olarak kilitlenmiştir.</p>
+                    <div class="alert alert-warning">
+                        <p>Lütfen bir süre bekleyip tekrar deneyin veya şifrenizi sıfırlamak için aşağıdaki bağlantıyı kullanın.</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'home' %}" class="btn btn-primary me-3">
+                            <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="fas fa-key me-2"></i>Şifremi Unuttum
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

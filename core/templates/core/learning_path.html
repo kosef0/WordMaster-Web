@@ -1,0 +1,93 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Öğrenme Yolu - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="mb-3">{{ learning_path.name }}</h1>
+            <p class="lead">{{ learning_path.description }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end d-flex align-items-center justify-content-lg-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Öğrenme Paneline Dön
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="learning-path-progress mb-4">
+                <div class="progress-bar">
+                    <div class="progress" style="width: {{ overall_progress }}%;"></div>
+                </div>
+                <div class="text-center mt-2">
+                    <span class="fw-bold">{{ overall_progress }}% tamamlandı</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="learning-path">
+        {% for category_progress in categories_progress %}
+            <div class="level {% if not category_progress.unlocked %}locked{% endif %}">
+                <h3 class="level-title">{{ category_progress.category.name }}</h3>
+                
+                <div class="card animated">
+                    <div class="row align-items-center p-3">
+                        <div class="col-md-1 text-center">
+                            {% if category_progress.completed %}
+                                <div class="lesson completed">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            {% elif category_progress.unlocked %}
+                                <div class="lesson active">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                            {% else %}
+                                <div class="lesson locked">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <h4 class="mb-2">{{ category_progress.category.name }}</h4>
+                            <p class="mb-2">{{ category_progress.category.description|truncatechars:150 }}</p>
+                            
+                            {% if category_progress.unlocked %}
+                                <div class="progress-bar mb-2">
+                                    <div class="progress" style="width: {{ category_progress.percentage }}%;"></div>
+                                </div>
+                                <small>{{ category_progress.percentage }}% tamamlandı</small>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-3 text-end">
+                            {% if category_progress.unlocked %}
+                                <a href="{% url 'learning_category' category_progress.category.id %}" class="btn btn-primary">
+                                    {% if category_progress.completed %}
+                                        <i class="fas fa-redo me-1"></i> Tekrar Çalış
+                                    {% else %}
+                                        <i class="fas fa-book-open me-1"></i> Devam Et
+                                    {% endif %}
+                                </a>
+                            {% else %}
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="fas fa-lock me-1"></i> Kilitli
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="alert alert-info">
+                Bu öğrenme yolunda henüz kategori bulunmamaktadır.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

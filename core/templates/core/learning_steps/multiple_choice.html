@@ -1,0 +1,375 @@
+<div class="learning-step multiple-choice-step">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Bu adımda {{ words|length }} kelime için çoktan seçmeli sorular cevaplayacaksınız. Her soru için doğru çevirisi olan seçeneği işaretleyin.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Soru Kartları -->
+            <div class="question-cards">
+                {% for word in words %}
+                <div class="question-card card mb-4 {% if forloop.first %}active{% endif %}" id="question-card-{{ word.id }}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Soru {{ forloop.counter }}/{{ words|length }}</span>
+                        <button type="button" class="btn btn-sm btn-outline-primary pronunciation-btn" data-word="{{ word.english }}">
+                            <i class="fas fa-volume-up"></i> Telaffuz
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="question-word mb-4">{{ word.english }}</h3>
+                        
+                        <div class="options">
+                            {% for option in word.options %}
+                            <div class="option mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="question-{{ word.id }}" 
+                                           id="option-{{ word.id }}-{{ forloop.counter }}" value="{{ option }}">
+                                    <label class="form-check-label" for="option-{{ word.id }}-{{ forloop.counter }}">
+                                        {{ option }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="answer-feedback mt-4" style="display: none;">
+                            <div class="alert alert-success correct-answer" style="display: none;">
+                                <i class="fas fa-check-circle me-2"></i> Doğru cevap!
+                            </div>
+                            <div class="alert alert-danger wrong-answer" style="display: none;">
+                                <i class="fas fa-times-circle me-2"></i> Yanlış cevap! Doğru cevap: <strong>{{ word.turkish }}</strong>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button class="btn btn-primary check-answer" data-word-id="{{ word.id }}" data-correct="{{ word.turkish }}">
+                                <i class="fas fa-check me-2"></i> Cevabı Kontrol Et
+                            </button>
+                            <button class="btn btn-success continue-button" style="display: none;" data-word-id="{{ word.id }}">
+                                <i class="fas fa-arrow-right me-2"></i> Devam Et
+                            </button>
+                        </div>
+                    </div>
+                    <audio id="pronunciation-{{ word.id }}" class="pronunciation-audio"></audio>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- İlerleme Paneli -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">İlerleme</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%;" 
+                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="quiz-progress-bar">
+                            0%
+                        </div>
+                    </div>
+                    
+                    <div class="quiz-stats">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="stat-item">
+                                    <h6>Tamamlanan</h6>
+                                    <p class="mb-0"><span id="completed-count">0</span>/{{ words|length }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-item">
+                                    <h6>Doğru</h6>
+                                    <p class="mb-0"><span id="correct-count">0</span>/<span id="answered-count">0</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="question-list mt-4">
+                        <h6>Sorular</h6>
+                        <div class="list-group">
+                            {% for word in words %}
+                            <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center question-nav-item" 
+                                    data-index="{{ forloop.counter0 }}" id="nav-item-{{ word.id }}">
+                                Soru {{ forloop.counter }}
+                                <span class="question-status">
+                                    <i class="far fa-circle"></i>
+                                </span>
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tamamla Butonu -->
+            <div class="complete-step mt-3">
+                <button class="btn btn-primary btn-lg w-100" id="complete-quiz" disabled>
+                    <i class="fas fa-check-circle me-2"></i> Adımı Tamamla
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .question-card {
+        display: none;
+    }
+    
+    .question-card.active {
+        display: block;
+    }
+    
+    .question-word {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .option {
+        padding: 10px;
+        border-radius: 5px;
+        transition: all 0.2s;
+    }
+    
+    .option:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .option.correct {
+        background-color: rgba(40, 167, 69, 0.2);
+    }
+    
+    .option.wrong {
+        background-color: rgba(220, 53, 69, 0.2);
+    }
+    
+    .question-status .fa-circle {
+        color: #dee2e6;
+    }
+    
+    .question-status .fa-check-circle {
+        color: #28a745;
+    }
+    
+    .question-status .fa-times-circle {
+        color: #dc3545;
+    }
+    
+    .question-nav-item.active {
+        font-weight: bold;
+        background-color: #e9ecef;
+    }
+    
+    .question-nav-item.correct .question-status i {
+        color: #28a745;
+    }
+    
+    .question-nav-item.wrong .question-status i {
+        color: #dc3545;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const wordsData = JSON.parse('{{ words_json|escapejs }}');
+        let currentQuestionIndex = 0;
+        let answeredQuestions = [];
+        let correctAnswers = 0;
+        
+        // Telaffuz butonlarını ayarla
+        const pronunciationButtons = document.querySelectorAll('.pronunciation-btn');
+        pronunciationButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const word = this.getAttribute('data-word');
+                const audioElement = this.closest('.question-card').querySelector('audio');
+                
+                fetch(`/api/pronunciation/?word=${encodeURIComponent(word)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Telaffuz alınamadı');
+                        }
+                        return response.blob();
+                    })
+                    .then(audioBlob => {
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        audioElement.src = audioUrl;
+                        audioElement.play();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Telaffuz yüklenirken bir hata oluştu.');
+                    });
+            });
+        });
+        
+        // Cevap kontrol butonları
+        const checkButtons = document.querySelectorAll('.check-answer');
+        checkButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const wordId = this.getAttribute('data-word-id');
+                const correctAnswer = this.getAttribute('data-correct');
+                const questionCard = document.getElementById(`question-card-${wordId}`);
+                const selectedOption = questionCard.querySelector('input[name="question-' + wordId + '"]:checked');
+                
+                if (!selectedOption) {
+                    alert('Lütfen bir seçenek işaretleyin.');
+                    return;
+                }
+                
+                const userAnswer = selectedOption.value;
+                const isCorrect = (userAnswer === correctAnswer);
+                
+                // Cevap geri bildirimini göster
+                const feedbackElement = questionCard.querySelector('.answer-feedback');
+                feedbackElement.style.display = 'block';
+                
+                if (isCorrect) {
+                    questionCard.querySelector('.correct-answer').style.display = 'block';
+                    correctAnswers++;
+                } else {
+                    questionCard.querySelector('.wrong-answer').style.display = 'block';
+                }
+                
+                // Cevaplanan soruları güncelle
+                if (!answeredQuestions.includes(wordId)) {
+                    answeredQuestions.push(wordId);
+                }
+                
+                // Seçenekleri devre dışı bırak
+                const options = questionCard.querySelectorAll('input[type="radio"]');
+                options.forEach(option => {
+                    option.disabled = true;
+                    
+                    // Doğru ve yanlış seçenekleri işaretle
+                    const optionParent = option.closest('.option');
+                    if (option.value === correctAnswer) {
+                        optionParent.classList.add('correct');
+                    } else if (option.checked && option.value !== correctAnswer) {
+                        optionParent.classList.add('wrong');
+                    }
+                });
+                
+                // Kontrol butonunu gizle, devam butonunu göster
+                this.style.display = 'none';
+                questionCard.querySelector('.continue-button').style.display = 'inline-block';
+                
+                // Soru listesindeki durumu güncelle
+                updateQuestionStatus(wordId, isCorrect);
+                
+                // İlerlemeyi güncelle
+                updateProgress();
+                
+                // Kelime ilerleme durumunu sunucuya kaydet
+                fetch(`/word/${wordId}/update-progress/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: `proficiency_level=${isCorrect ? 3 : 1}`
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+        
+        // Devam butonları
+        const continueButtons = document.querySelectorAll('.continue-button');
+        continueButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Sonraki soruya geç
+                if (currentQuestionIndex < wordsData.length - 1) {
+                    showQuestion(currentQuestionIndex + 1);
+                } else {
+                    // Tüm sorular tamamlandıysa
+                    if (answeredQuestions.length === wordsData.length) {
+                        document.getElementById('complete-quiz').disabled = false;
+                    }
+                }
+            });
+        });
+        
+        // Soru navigasyon butonları
+        const questionNavItems = document.querySelectorAll('.question-nav-item');
+        questionNavItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const index = parseInt(this.getAttribute('data-index'));
+                showQuestion(index);
+            });
+        });
+        
+        // Soru gösterme fonksiyonu
+        function showQuestion(index) {
+            // Aktif soruyu gizle
+            document.querySelector('.question-card.active').classList.remove('active');
+            
+            // Yeni soruyu göster
+            document.getElementById(`question-card-${wordsData[index].id}`).classList.add('active');
+            
+            // Navigasyon butonlarını güncelle
+            document.querySelectorAll('.question-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelectorAll('.question-nav-item')[index].classList.add('active');
+            
+            // Güncel indeksi güncelle
+            currentQuestionIndex = index;
+        }
+        
+        // Soru durumunu güncelleme
+        function updateQuestionStatus(wordId, isCorrect) {
+            const navItem = document.getElementById(`nav-item-${wordId}`);
+            const statusIcon = navItem.querySelector('.question-status i');
+            
+            if (isCorrect) {
+                statusIcon.className = 'fas fa-check-circle';
+                navItem.classList.add('correct');
+            } else {
+                statusIcon.className = 'fas fa-times-circle';
+                navItem.classList.add('wrong');
+            }
+        }
+        
+        // İlerleme durumunu güncelleme
+        function updateProgress() {
+            const answeredCount = answeredQuestions.length;
+            const totalQuestions = wordsData.length;
+            const percentage = Math.round((answeredCount / totalQuestions) * 100);
+            
+            // İlerleme çubuğunu güncelle
+            const progressBar = document.getElementById('quiz-progress-bar');
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}%`;
+            progressBar.setAttribute('aria-valuenow', percentage);
+            
+            // İstatistikleri güncelle
+            document.getElementById('completed-count').textContent = answeredCount;
+            document.getElementById('answered-count').textContent = answeredCount;
+            document.getElementById('correct-count').textContent = correctAnswers;
+            
+            // Tamamla butonunu etkinleştir/devre dışı bırak
+            document.getElementById('complete-quiz').disabled = (answeredCount < totalQuestions);
+        }
+        
+        // İlk soruyu göster
+        showQuestion(0);
+        
+        // Adımı tamamla butonu
+        document.getElementById('complete-quiz').addEventListener('click', function() {
+            if (answeredQuestions.length === wordsData.length) {
+                // Adımı tamamla
+                window.completeStep(correctAnswers, wordsData.length);
+            }
+        });
+    });
+</script> 

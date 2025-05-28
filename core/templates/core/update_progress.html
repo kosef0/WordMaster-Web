@@ -1,0 +1,208 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}İlerleme Güncelle - {{ word.english }} - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0">İlerleme Güncelle</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <h4>{{ word.english }}</h4>
+                        <h5 class="text-muted">{{ word.turkish }}</h5>
+                        
+                        {% if word.example_sentence %}
+                            <p class="mt-3">
+                                <strong>Örnek Cümle:</strong><br>
+                                <em>{{ word.example_sentence }}</em>
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold mb-3">Öğrenme Durumu</label>
+                            
+                            <div class="proficiency-options">
+                                <div class="proficiency-option {% if not progress or progress.proficiency_level == 0 %}selected{% endif %}">
+                                    <input class="proficiency-input" type="radio" name="level" id="level0" value="0" 
+                                        {% if not progress or progress.proficiency_level == 0 %}checked{% endif %}>
+                                    <label class="proficiency-label" for="level0">
+                                        <div class="proficiency-icon bg-danger">
+                                            <i class="fas fa-seedling"></i>
+                                        </div>
+                                        <div class="proficiency-details">
+                                            <span class="proficiency-title">Öğrenilmemiş</span>
+                                            <span class="proficiency-description">Bu kelimeyi henüz öğrenmediniz</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <div class="proficiency-option {% if progress and progress.proficiency_level == 1 or progress.proficiency_level == 2 %}selected{% endif %}">
+                                    <input class="proficiency-input" type="radio" name="level" id="level1" value="1" 
+                                        {% if progress and progress.proficiency_level == 1 or progress.proficiency_level == 2 %}checked{% endif %}>
+                                    <label class="proficiency-label" for="level1">
+                                        <div class="proficiency-icon bg-warning">
+                                            <i class="fas fa-leaf"></i>
+                                        </div>
+                                        <div class="proficiency-details">
+                                            <span class="proficiency-title">Öğreniyorum</span>
+                                            <span class="proficiency-description">Bu kelimeyi öğrenmeye başladınız</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <div class="proficiency-option {% if progress and progress.proficiency_level == 3 %}selected{% endif %}">
+                                    <input class="proficiency-input" type="radio" name="level" id="level3" value="3" 
+                                        {% if progress and progress.proficiency_level == 3 %}checked{% endif %}>
+                                    <label class="proficiency-label" for="level3">
+                                        <div class="proficiency-icon bg-success">
+                                            <i class="fas fa-tree"></i>
+                                        </div>
+                                        <div class="proficiency-details">
+                                            <span class="proficiency-title">İyi Biliyorum</span>
+                                            <span class="proficiency-description">Bu kelimeyi iyi biliyorsunuz</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                
+                                <div class="proficiency-option {% if progress and progress.proficiency_level == 4 or progress.proficiency_level == 5 %}selected{% endif %}">
+                                    <input class="proficiency-input" type="radio" name="level" id="level5" value="5" 
+                                        {% if progress and progress.proficiency_level == 4 or progress.proficiency_level == 5 %}checked{% endif %}>
+                                    <label class="proficiency-label" for="level5">
+                                        <div class="proficiency-icon bg-primary">
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <div class="proficiency-details">
+                                            <span class="proficiency-title">Tam Öğrendim</span>
+                                            <span class="proficiency-description">Bu kelimeyi tamamen öğrendiniz</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if progress %}
+                            <div class="mb-4">
+                                <p class="mb-1"><strong>Son çalışma:</strong> {{ progress.last_reviewed|date:"d.m.Y H:i" }}</p>
+                                <p class="mb-1"><strong>Çalışma sayısı:</strong> {{ progress.times_reviewed }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Geri dönüş URL'si -->
+                        <input type="hidden" name="next" value="{{ request.META.HTTP_REFERER|default:'category_detail' }}">
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ request.META.HTTP_REFERER|default:'javascript:history.back()' }}" class="btn btn-outline-secondary">İptal</a>
+                            <button type="submit" class="btn btn-primary">Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.proficiency-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.proficiency-option {
+    position: relative;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.proficiency-option:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.proficiency-option.selected {
+    border-color: var(--primary);
+    background-color: rgba(28, 176, 246, 0.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.proficiency-input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.proficiency-label {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin: 0;
+    width: 100%;
+    cursor: pointer;
+}
+
+.proficiency-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    margin-right: 15px;
+    font-size: 1.2rem;
+}
+
+.proficiency-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.proficiency-title {
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.proficiency-description {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* JavaScript for interactivity */
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const proficiencyOptions = document.querySelectorAll('.proficiency-option');
+    const proficiencyInputs = document.querySelectorAll('.proficiency-input');
+    
+    // Radio button selection
+    proficiencyInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Remove selected class from all options
+            proficiencyOptions.forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to checked option
+            if (this.checked) {
+                this.closest('.proficiency-option').classList.add('selected');
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

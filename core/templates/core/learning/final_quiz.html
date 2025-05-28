@@ -1,0 +1,192 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ step.name }} - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="mb-3">{{ step.name }}</h1>
+            <p class="lead">{{ step.description }}</p>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> Bu sınavda {{ step.max_mistakes }} yanlış hakkınız var. Dikkatli olun!
+            </div>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a href="{% url 'learning_panel' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Öğrenme Paneline Dön
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <form id="final-quiz-form">
+                        {% for word in words %}
+                            <div class="mb-4">
+                                <h5 class="mb-3">{{ word.english }}</h5>
+                                <div class="options">
+                                    {% for option in word.options %}
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="answer_{{ forloop.parentloop.counter }}" value="{{ option }}" id="option_{{ forloop.parentloop.counter }}_{{ forloop.counter }}" {% if option == word.turkish %}data-correct="true"{% endif %}>
+                                            <label class="form-check-label" for="option_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                                                {{ option }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check me-2"></i> Sınavı Bitir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-check {
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-check:hover {
+    background-color: #f8f9fa;
+}
+
+.form-check.correct {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.form-check.incorrect {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.form-check-input:checked + .form-check-label {
+    font-weight: 500;
+}
+
+.alert {
+    font-size: 1.1rem;
+}
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('final-quiz-form');
+    let mistakes = 0;
+    const maxMistakes = parseInt('{{ step.max_mistakes }}');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const answers = [];
+        const correctAnswers = [];
+        
+        // Tüm cevapları topla
+        form.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+            const questionNumber = input.name.split('_')[1];
+            answers.push(input.value);
+            const correctInput = document.querySelector(`input[name="answer_${questionNumber}"][data-correct="true"]`);
+            if (correctInput) {
+                correctAnswers.push(correctInput.value);
+            }
+        });
+        
+        // AJAX ile cevapları gönder
+        fetch(`{% url 'check_step_completion' category.id step.id %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: new URLSearchParams({
+                'answers[]': answers,
+                'correct_answers[]': correctAnswers
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Doğru cevapları işaretle
+                form.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+                    const questionNumber = input.name.split('_')[1];
+                    const correctInput = document.querySelector(`input[name="answer_${questionNumber}"][data-correct="true"]`);
+                    const formCheck = input.closest('.form-check');
+                    
+                    if (input.value === correctInput.value) {
+                        formCheck.classList.add('correct');
+                    } else {
+                        formCheck.classList.add('incorrect');
+                        correctInput.closest('.form-check').classList.add('correct');
+                        mistakes++;
+                    }
+                });
+                
+                // Başarı mesajını göster
+                setTimeout(() => {
+                    alert(data.message);
+                    window.location.href = "{% url 'learning_panel' %}";
+                }, 1000);
+            } else {
+                // Yanlış cevapları işaretle
+                form.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+                    const questionNumber = input.name.split('_')[1];
+                    const correctInput = document.querySelector(`input[name="answer_${questionNumber}"][data-correct="true"]`);
+                    const formCheck = input.closest('.form-check');
+                    
+                    if (input.value === correctInput.value) {
+                        formCheck.classList.add('correct');
+                    } else {
+                        formCheck.classList.add('incorrect');
+                        correctInput.closest('.form-check').classList.add('correct');
+                        mistakes++;
+                    }
+                });
+                
+                // Hata mesajını göster
+                alert(data.message);
+                
+                // Eğer çok fazla hata varsa formu sıfırla
+                if (mistakes > maxMistakes) {
+                    form.reset();
+                    mistakes = 0;
+                }
+            }
+        });
+    });
+    
+    // CSRF token'ı al
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} 

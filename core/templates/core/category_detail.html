@@ -1,0 +1,595 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Kategori Başlık ve Bilgiler -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="mb-3">{{ category.name }}</h1>
+            <p class="lead">{{ category.description|default:"Bu kategori hakkında henüz açıklama eklenmemiş." }}</p>
+            
+            {% if user.is_authenticated and progress %}
+                <div class="progress mb-3" style="height: 15px;">
+                    <div class="progress-bar w-{{ progress.percentage|stringformat:'i' }}" role="progressbar" 
+                         aria-valuenow="{{ progress.percentage }}" 
+                         aria-valuemin="0" aria-valuemax="100">
+                        {{ progress.percentage }}%
+                    </div>
+                </div>
+                <p class="text-muted">
+                    <i class="fas fa-book-reader me-2"></i> 
+                    {{ progress.learned }} / {{ progress.total }} kelime öğrenildi
+                </p>
+            {% endif %}
+        </div>
+        <div class="col-lg-4 text-lg-end d-flex align-items-center justify-content-lg-end">
+            <a href="{% url 'category_list' %}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-arrow-left me-1"></i> Kategorilere Dön
+            </a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'quiz_start_category' category.id %}" class="btn btn-primary">
+                    <i class="fas fa-play me-1"></i> Quiz Başlat
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Kelime Filtreleme -->
+    {% if user.is_authenticated %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Kelimeleri Filtrele</h5>
+                        <form method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <label for="proficiency" class="form-label">Öğrenme Durumu</label>
+                                <select class="form-select" id="proficiency" name="proficiency">
+                                    <option value="" {% if not proficiency %}selected{% endif %}>Tümü</option>
+                                    <option value="0" {% if proficiency == '0' %}selected{% endif %}>Öğrenilmemiş</option>
+                                    <option value="1" {% if proficiency == '1' %}selected{% endif %}>Yeni Öğrenilen</option>
+                                    <option value="2" {% if proficiency == '2' %}selected{% endif %}>Öğreniliyor</option>
+                                    <option value="3" {% if proficiency == '3' %}selected{% endif %}>İyi Bilinen</option>
+                                    <option value="4" {% if proficiency == '4' %}selected{% endif %}>Çok İyi Bilinen</option>
+                                    <option value="5" {% if proficiency == '5' %}selected{% endif %}>Tam Öğrenilmiş</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="sort" class="form-label">Sıralama</label>
+                                <select class="form-select" id="sort" name="sort">
+                                    <option value="name" {% if sort == 'name' %}selected{% endif %}>İsme Göre (A-Z)</option>
+                                    <option value="-name" {% if sort == '-name' %}selected{% endif %}>İsme Göre (Z-A)</option>
+                                    <option value="proficiency" {% if sort == 'proficiency' %}selected{% endif %}>Öğrenme Durumuna Göre (Düşük-Yüksek)</option>
+                                    <option value="-proficiency" {% if sort == '-proficiency' %}selected{% endif %}>Öğrenme Durumuna Göre (Yüksek-Düşük)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="search" class="form-label">Kelime Ara</label>
+                                <input type="text" class="form-control" id="search" name="search" value="{{ search|default:'' }}" placeholder="Kelime ara...">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Filtrele</button>
+                                <a href="{% url 'category_detail' category.id %}" class="btn btn-outline-secondary">Filtreleri Temizle</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Kelime Listesi -->
+    <div class="row">
+        {% for word in words %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card word-card h-100 {% if user.is_authenticated and word.user_progress %}proficiency-{{ word.user_progress.proficiency_level }}{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0">{{ word.english }}</h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary pronunciation-btn" data-word="{{ word.english }}">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        </div>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ word.turkish }}</h6>
+                        <audio id="pronunciation-card-{{ word.id }}" class="pronunciation-audio"></audio>
+                        
+                        {% if word.example_sentence %}
+                            <p class="card-text mt-3">
+                                <small class="text-muted">Örnek:</small><br>
+                                <em>{{ word.example_sentence }}</em>
+                            </p>
+                        {% endif %}
+                        
+                        {% if user.is_authenticated %}
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    {% if word.user_progress %}
+                                        <div class="proficiency-indicator level-{{ word.user_progress.proficiency_level }}">
+                                            {% if word.user_progress.proficiency_level == 0 %}Öğrenilmemiş{% endif %}
+                                            {% if word.user_progress.proficiency_level == 1 %}Yeni Öğrenilen{% endif %}
+                                            {% if word.user_progress.proficiency_level == 2 %}Öğreniliyor{% endif %}
+                                            {% if word.user_progress.proficiency_level == 3 %}İyi Bilinen{% endif %}
+                                            {% if word.user_progress.proficiency_level == 4 %}Çok İyi Bilinen{% endif %}
+                                            {% if word.user_progress.proficiency_level == 5 %}Tam Öğrenilmiş{% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="proficiency-indicator">Çalışılmamış</div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" data-bs-toggle="modal" data-bs-target="#wordModal{{ word.id }}">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary update-progress-btn" data-word-id="{{ word.id }}">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kelime Detay Modal -->
+            {% if user.is_authenticated %}
+                <div class="modal fade" id="wordModal{{ word.id }}" tabindex="-1" aria-labelledby="wordModalLabel{{ word.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="wordModalLabel{{ word.id }}">{{ word.english }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <h6>{{ word.turkish }}</h6>
+                                
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-sm btn-outline-primary pronunciation-btn" data-word="{{ word.english }}">
+                                        <i class="fas fa-volume-up"></i> Telaffuz
+                                    </button>
+                                    <audio id="pronunciation-{{ word.id }}" class="pronunciation-audio"></audio>
+                                </div>
+                                
+                                {% if word.part_of_speech %}
+                                    <p class="mb-2"><strong>Kelime Türü:</strong> {{ word.part_of_speech }}</p>
+                                {% endif %}
+                                
+                                {% if word.example_sentence %}
+                                    <p class="mb-2"><strong>Örnek Cümle:</strong><br> {{ word.example_sentence }}</p>
+                                {% endif %}
+                                
+                                {% if word.notes %}
+                                    <p class="mb-2"><strong>Notlar:</strong><br> {{ word.notes }}</p>
+                                {% endif %}
+                                
+                                {% if word.user_progress %}
+                                    <hr>
+                                    <h6>Öğrenme Durumu</h6>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar w-{{ word.user_progress.proficiency_percentage|stringformat:'i' }}" role="progressbar" 
+                                             aria-valuenow="{{ word.user_progress.proficiency_percentage }}" 
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            {{ word.user_progress.proficiency_percentage }}%
+                                        </div>
+                                    </div>
+                                    <p class="text-muted">
+                                        <small>Son çalışma: {{ word.user_progress.last_reviewed|date:"d.m.Y H:i" }}</small>
+                                    </p>
+                                {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                                <button type="button" class="btn btn-primary update-progress-btn" data-word-id="{{ word.id }}" data-bs-dismiss="modal">İlerleme Güncelle</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    {% if search %}
+                        "{{ search }}" aramanıza uygun kelime bulunamadı.
+                    {% else %}
+                        Bu kategoride henüz kelime bulunmuyor.
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- İlerleme Güncelleme Modal -->
+    <div class="modal fade" id="progressUpdateModal" tabindex="-1" aria-labelledby="progressUpdateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white p-4 border-0">
+                    <h5 class="modal-title fs-4 fw-bold" id="progressUpdateModalLabel">İlerleme Güncelle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 progress-modal-body">
+                    <div class="text-center p-5">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Yükleniyor...</span>
+                        </div>
+                        <p class="mt-3 text-muted">İçerik yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sayfalama -->
+    {% if words.paginator.num_pages > 1 %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Sayfalama">
+                    <ul class="pagination justify-content-center">
+                        {% if words.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if proficiency %}&proficiency={{ proficiency }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" aria-label="İlk">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ words.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if proficiency %}&proficiency={{ proficiency }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" aria-label="Önceki">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" aria-label="İlk">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" aria-label="Önceki">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in words.paginator.page_range %}
+                            {% if num == words.number %}
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > words.number|add:'-3' and num < words.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if proficiency %}&proficiency={{ proficiency }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if words.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ words.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if proficiency %}&proficiency={{ proficiency }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" aria-label="Sonraki">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ words.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if proficiency %}&proficiency={{ proficiency }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" aria-label="Son">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" aria-label="Sonraki">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" aria-label="Son">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+/* Modal Stillleri */
+#progressUpdateModal .modal-content {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+#progressUpdateModal .modal-header {
+    position: relative;
+    background: linear-gradient(135deg, #1cb0f6, #0091da);
+}
+
+#progressUpdateModal .modal-title {
+    font-family: var(--font-family, 'Nunito', sans-serif);
+}
+
+#progressUpdateModal .progress-modal-body {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Proficiency Options Stillleri - Modal içinde kullanılacak */
+#progressUpdateModal .proficiency-options {
+    padding: 20px;
+}
+
+#progressUpdateModal .proficiency-option {
+    border-width: 2px;
+    margin-bottom: 12px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#progressUpdateModal .proficiency-option:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+#progressUpdateModal .proficiency-option.selected {
+    transform: translateY(-3px);
+    border-width: 2px;
+    box-shadow: 0 8px 15px rgba(28, 176, 246, 0.2);
+}
+
+#progressUpdateModal .proficiency-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.4rem;
+    transition: all 0.3s ease;
+}
+
+#progressUpdateModal .proficiency-option:hover .proficiency-icon {
+    transform: scale(1.1);
+}
+
+#progressUpdateModal .proficiency-details {
+    padding-left: 5px;
+}
+
+#progressUpdateModal .proficiency-title {
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+#progressUpdateModal .proficiency-description {
+    font-size: 0.85rem;
+}
+
+/* Form butonları */
+#progressUpdateModal .btn-primary {
+    background-color: var(--primary);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: bold;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+}
+
+#progressUpdateModal .btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+#progressUpdateModal .btn-outline-secondary {
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+/* Animation */
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#progressUpdateModal.show .modal-content {
+    animation: modalFadeIn 0.3s forwards;
+}
+</style>
+
+<!-- Telaffuz için JavaScript kodu -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tüm telaffuz butonlarını seç
+    const pronunciationButtons = document.querySelectorAll('.pronunciation-btn');
+    
+    // Her buton için olay dinleyicisi ekle
+    pronunciationButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Butondaki data-word özelliğinden kelimenin İngilizce adını al
+            const word = this.getAttribute('data-word');
+            
+            // En yakın audio elementini bul
+            const audioElement = this.closest('.card-body, .modal-body').querySelector('audio');
+            
+            // API'den ses dosyasını iste
+            fetch(`/api/pronunciation/?word=${encodeURIComponent(word)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Telaffuz alınamadı');
+                    }
+                    return response.blob();
+                })
+                .then(audioBlob => {
+                    // Ses blob'unu URL'e dönüştür
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    // Audio elementine kaynak olarak ayarla
+                    audioElement.src = audioUrl;
+                    
+                    // Sesi çal
+                    audioElement.play();
+                })
+                .catch(error => {
+                    console.error('Telaffuz hatası:', error);
+                    alert('Telaffuz sesi şu anda yüklenemiyor. Lütfen daha sonra tekrar deneyin.');
+                });
+        });
+    });
+    
+    // İlerleme güncelleme butonları için olay dinleyicisi
+    const updateProgressButtons = document.querySelectorAll('.update-progress-btn');
+    const progressModal = new bootstrap.Modal(document.getElementById('progressUpdateModal'));
+    
+    updateProgressButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const wordId = this.getAttribute('data-word-id');
+            
+            // Modal açılmadan önce içeriği temizle
+            document.querySelector('#progressUpdateModal .modal-body').innerHTML = `
+                <div class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Yükleniyor...</span>
+                    </div>
+                    <p class="mt-3 text-muted">İçerik yükleniyor...</p>
+                </div>
+            `;
+            
+            // Modal göster
+            progressModal.show();
+            
+            // Form içeriğini AJAX ile getir
+            fetch(`/word/${wordId}/update-progress/`)
+                .then(response => response.text())
+                .then(html => {
+                    // Parse the HTML to extract only what we need
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const formContent = doc.querySelector('.card-body');
+                    
+                    if (formContent) {
+                        // Update modal title with word name
+                        const wordTitle = doc.querySelector('.card-body h4');
+                        if (wordTitle) {
+                            document.querySelector('#progressUpdateModalLabel').textContent = `İlerleme Güncelle - ${wordTitle.textContent}`;
+                        }
+                        
+                        // Extract form content
+                        document.querySelector('#progressUpdateModal .modal-body').innerHTML = formContent.innerHTML;
+                        
+                        // Styling tweaks for modal content
+                        const modalBody = document.querySelector('#progressUpdateModal .modal-body');
+                        modalBody.classList.add('p-4');
+                        
+                        // Word title styling
+                        const wordTitleInModal = modalBody.querySelector('h4');
+                        if (wordTitleInModal) {
+                            wordTitleInModal.classList.add('fw-bold', 'text-primary', 'mb-1');
+                        }
+                        
+                        const wordTranslation = modalBody.querySelector('h5');
+                        if (wordTranslation) {
+                            wordTranslation.classList.add('mb-3');
+                        }
+                        
+                        // Example sentence styling
+                        const exampleSentence = modalBody.querySelector('p em');
+                        if (exampleSentence) {
+                            const parentP = exampleSentence.closest('p');
+                            parentP.classList.add('p-3', 'bg-light', 'rounded-3', 'border-start', 'border-primary', 'border-4');
+                        }
+                        
+                        // Buttons styling
+                        const buttons = modalBody.querySelectorAll('.btn');
+                        buttons.forEach(btn => {
+                            btn.classList.add('py-2', 'px-4');
+                        });
+                        
+                        // Fix form submission
+                        const form = document.querySelector('#progressUpdateModal form');
+                        if (form) {
+                            form.addEventListener('submit', function(e) {
+                                e.preventDefault();
+                                
+                                const submitButton = form.querySelector('button[type="submit"]');
+                                if (submitButton) {
+                                    submitButton.disabled = true;
+                                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Kaydediliyor...';
+                                }
+                                
+                                // Send the form data via AJAX
+                                const formData = new FormData(this);
+                                
+                                fetch(`/word/${wordId}/update-progress/`, {
+                                    method: 'POST',
+                                    body: formData,
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                })
+                                .then(response => {
+                                    if (response.ok) {
+                                        // Show success message before reload
+                                        document.querySelector('#progressUpdateModal .modal-body').innerHTML = `
+                                            <div class="text-center p-5">
+                                                <div class="mb-4">
+                                                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                                                </div>
+                                                <h4 class="mb-3">İlerleme Kaydedildi!</h4>
+                                                <p class="text-muted">Kelime ilerlemeniz başarıyla güncellendi.</p>
+                                            </div>
+                                        `;
+                                        
+                                        // Close modal and refresh page after 1 second
+                                        setTimeout(() => {
+                                            progressModal.hide();
+                                            window.location.reload();
+                                        }, 1000);
+                                    } else {
+                                        throw new Error('Form submission failed');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Form submission error:', error);
+                                    document.querySelector('#progressUpdateModal .modal-body').innerHTML = `
+                                        <div class="text-center p-5">
+                                            <div class="mb-4">
+                                                <i class="fas fa-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+                                            </div>
+                                            <h4 class="mb-3">Hata Oluştu!</h4>
+                                            <p class="text-muted">Form gönderimi sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyin.</p>
+                                            <button type="button" class="btn btn-primary mt-3" data-bs-dismiss="modal">Kapat</button>
+                                        </div>
+                                    `;
+                                });
+                            });
+                        }
+                    } else {
+                        document.querySelector('#progressUpdateModal .modal-body').innerHTML = `
+                            <div class="text-center p-5">
+                                <div class="mb-4">
+                                    <i class="fas fa-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+                                </div>
+                                <h4 class="mb-3">İçerik Yüklenemedi</h4>
+                                <p class="text-muted">İçerik yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.</p>
+                                <button type="button" class="btn btn-primary mt-3" data-bs-dismiss="modal">Kapat</button>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('AJAX error:', error);
+                    document.querySelector('#progressUpdateModal .modal-body').innerHTML = `
+                        <div class="text-center p-5">
+                            <div class="mb-4">
+                                <i class="fas fa-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="mb-3">Bağlantı Hatası</h4>
+                            <p class="text-muted">İçerik yüklenirken bir bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.</p>
+                            <button type="button" class="btn btn-primary mt-3" data-bs-dismiss="modal">Kapat</button>
+                        </div>
+                    `;
+                });
+        });
+    });
+});
+</script>
+{% endblock %} 

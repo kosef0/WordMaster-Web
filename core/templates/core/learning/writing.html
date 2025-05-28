@@ -1,0 +1,146 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ step.name }} - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="mb-3">{{ step.name }}</h1>
+            <p class="lead">{{ step.description }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a href="{% url 'learning_panel' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Öğrenme Paneline Dön
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <form id="writing-form">
+                        {% for word in words %}
+                            <div class="mb-4">
+                                <label class="form-label">{{ word.turkish }}</label>
+                                <input type="text" class="form-control" name="answer_{{ forloop.counter }}" data-correct="{{ word.english }}">
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check me-2"></i> Cevapları Kontrol Et
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control {
+    font-size: 1.1rem;
+    padding: 0.75rem;
+}
+
+.form-control.correct {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.form-control.incorrect {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.form-label {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('writing-form');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const answers = [];
+        const correctAnswers = [];
+        
+        // Tüm cevapları topla
+        form.querySelectorAll('input[type="text"]').forEach(input => {
+            answers.push(input.value);
+            correctAnswers.push(input.dataset.correct);
+        });
+        
+        // AJAX ile cevapları gönder
+        fetch(`{% url 'check_step_completion' category.id step.id %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: new URLSearchParams({
+                'answers[]': answers,
+                'correct_answers[]': correctAnswers
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Doğru cevapları işaretle
+                form.querySelectorAll('input[type="text"]').forEach(input => {
+                    if (input.value.toLowerCase() === input.dataset.correct.toLowerCase()) {
+                        input.classList.add('correct');
+                    } else {
+                        input.classList.add('incorrect');
+                    }
+                });
+                
+                // Başarı mesajını göster
+                setTimeout(() => {
+                    alert(data.message);
+                    window.location.href = "{% url 'learning_panel' %}";
+                }, 1000);
+            } else {
+                // Yanlış cevapları işaretle
+                form.querySelectorAll('input[type="text"]').forEach(input => {
+                    if (input.value.toLowerCase() === input.dataset.correct.toLowerCase()) {
+                        input.classList.add('correct');
+                    } else {
+                        input.classList.add('incorrect');
+                    }
+                });
+                
+                // Hata mesajını göster
+                alert(data.message);
+            }
+        });
+    });
+    
+    // CSRF token'ı al
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} 

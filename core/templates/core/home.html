@@ -1,0 +1,716 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Word Master - İngilizce Öğrenmenin En Kolay Yolu{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero-section {
+        padding: 100px 0 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(28, 176, 246, 0.05) 0%, rgba(76, 201, 240, 0.05) 100%);
+        z-index: -1;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #1cb0f6;
+        margin-bottom: 20px;
+    }
+
+    .hero-text {
+        font-size: 1.2rem;
+        color: #555;
+        margin-bottom: 30px;
+    }
+
+    .hero-btn {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        border-radius: 30px;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(28, 176, 246, 0.3);
+    }
+
+    /* Features Section */
+    .features-section {
+        padding: 80px 0;
+        background-color: #f8f9fa;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1cb0f6;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        max-width: 700px;
+        margin: 0 auto 60px;
+        text-align: center;
+    }
+
+    .feature-card {
+        background-color: #fff;
+        border-radius: 20px;
+        padding: 40px 30px;
+        transition: all 0.3s ease;
+        height: 100%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: rgba(28, 176, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        color: #1cb0f6;
+        font-size: 2rem;
+    }
+
+    .feature-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .feature-text {
+        color: #666;
+        text-align: center;
+        line-height: 1.6;
+    }
+
+    .text-gradient {
+        background: linear-gradient(to right, #1cb0f6, #4cc9f0);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+    }
+
+    /* About Section */
+    .about-section {
+        padding: 80px 0;
+    }
+
+    /* Contact Section */
+    .contact-section {
+        padding: 80px 0;
+        background-color: #f8f9fa;
+    }
+
+    .contact-form {
+        background-color: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .contact-form label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #444;
+    }
+
+    .contact-form .form-control {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+    }
+
+    .contact-form .form-control:focus {
+        box-shadow: 0 0 0 3px rgba(28, 176, 246, 0.2);
+        border-color: #1cb0f6;
+    }
+
+    .contact-form textarea {
+        min-height: 150px;
+    }
+
+    .contact-btn {
+        background-color: #1cb0f6;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 25px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s;
+    }
+
+    .contact-btn:hover {
+        background-color: #0091da;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(28, 176, 246, 0.3);
+    }
+
+    .contact-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background-color: rgba(28, 176, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: #1cb0f6;
+        font-size: 1.8rem;
+    }
+    y
+    /* Oyun Kartları Stilleri */
+    .game-card {
+        transition: all 0.3s ease;
+        border-radius: 15px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .game-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+    }
+    
+    .game-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+{% if user.is_authenticated %}
+<!-- Giriş yapmış kullanıcılar için içerik -->
+<section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+                <h1 class="hero-title">Hoş Geldin, {{ user.username }}!</h1>
+                <div class="streak-counter mb-4">
+                    <i class="fas fa-fire text-warning"></i>
+                    <span class="streak-count">7</span>
+                    <span>gün üst üste çalışıyorsun!</span>
+                </div>
+                
+                {% if user_progress %}
+                <div class="mt-4 mb-5">
+                    <h5>Genel İlerleme</h5>
+                    <div class="progress" style="height: 12px; border-radius: 20px; background-color: #e9ecef;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 0%;" data-progress="{{ user_progress.percentage }}" aria-valuenow="{{ user_progress.percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="mt-2">
+                        <small>{{ user_progress.learned }} / {{ user_progress.total }} kelime öğrenildi</small>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary hero-btn me-md-2" data-aos="fade-up" data-aos-delay="200">
+                        <i class="fas fa-tachometer-alt me-2"></i> Öğrenme Paneline Git
+                    </a>
+                    <a href="{% url 'category_list' %}" class="btn btn-outline-primary hero-btn" data-aos="fade-up" data-aos-delay="300">
+                        <i class="fas fa-list me-2"></i> Kategorilere Göz At
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block text-center" data-aos="fade-left" data-aos-duration="1000">
+                <img src="https://img.freepik.com/free-vector/english-teacher-concept-illustration_114360-7477.jpg" 
+                    alt="İngilizce Öğren" class="img-fluid rounded-3" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Önerilen kategoriler -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title mb-5" data-aos="fade-up">Önerilen Kategoriler</h2>
+        <div class="row">
+            {% for category in categories|slice:":4" %}
+            <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+                <div class="card h-100">
+                    {% if category.image %}
+                    <img src="{{ category.image.url }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ category.name }}">
+                    {% else %}
+                    <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 180px; background-color: rgba(28, 176, 246, 0.1);">
+                        <i class="fas fa-book fa-3x" style="color: #1cb0f6;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">{{ category.name }}</h5>
+                        <p class="card-text">{{ category.description|truncatechars:60 }}</p>
+                        <a href="{% url 'category_detail' category.id %}" class="btn btn-primary">Kelimeleri Gör</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Henüz kategori eklenmemiş. Lütfen daha sonra tekrar kontrol edin.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if categories|length > 4 %}
+        <div class="text-center mt-4" data-aos="fade-up">
+            <a href="{% url 'category_list' %}" class="btn btn-outline-primary px-4 py-2">Tüm Kategorileri Gör</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Popüler Oyunlar -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title mb-5" data-aos="fade-up">Popüler Oyunlar</h2>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <!-- Kelime Avı Oyunu -->
+            <div class="col" data-aos="fade-up" data-aos-delay="100">
+                <div class="card h-100 game-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="game-icon me-3">
+                                <i class="fas fa-bullseye fs-2 text-danger"></i>
+                            </div>
+                            <h3 class="card-title h5 mb-0">Kelime Avı</h3>
+                        </div>
+                        <p class="card-text">Doğru kelimeleri hızlıca seçerek puanınızı artırın! Hızlı düşünme ve refleksinizi geliştirir.</p>
+                        <a href="{% url 'word_hunt_game' %}" class="btn btn-sm btn-danger mt-2">Hemen Oyna</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kelime Yapbozu Oyunu -->
+            <div class="col" data-aos="fade-up" data-aos-delay="200">
+                <div class="card h-100 game-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="game-icon me-3">
+                                <i class="fas fa-puzzle-piece fs-2 text-success"></i>
+                            </div>
+                            <h3 class="card-title h5 mb-0">Kelime Yapbozu</h3>
+                        </div>
+                        <p class="card-text">Karışık harfleri doğru sıraya dizip anlamlı kelimeyi oluşturun. Problem çözme yeteneğinizi geliştirir.</p>
+                        <a href="{% url 'word_puzzle_game' %}" class="btn btn-sm btn-success mt-2">Hemen Oyna</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hızlı Quiz Oyunu -->
+            <div class="col" data-aos="fade-up" data-aos-delay="300">
+                <div class="card h-100 game-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="game-icon me-3">
+                                <i class="fas fa-hourglass-half fs-2 text-warning"></i>
+                            </div>
+                            <h3 class="card-title h5 mb-0">Zamana Karşı Quiz</h3>
+                        </div>
+                        <p class="card-text">Sınırlı sürede hızlıca soruları cevaplayın. Zaman baskısı altında kelime haznenizi test edin!</p>
+                        <a href="{% url 'speed_quiz_game' %}" class="btn btn-sm btn-warning mt-2">Hemen Oyna</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4" data-aos="fade-up">
+            <a href="{% url 'game_menu' %}" class="btn btn-outline-primary px-4 py-2">
+                <i class="fas fa-gamepad me-2"></i> Tüm Oyunları Keşfet
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Hızlı Quiz Başlat -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="card p-5" data-aos="fade-up">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h2 class="fw-bold mb-3 text-gradient">Hızlı Quiz ile Kendini Test Et</h2>
+                    <p class="lead mb-4">Öğrendiğin kelimeleri pekiştirmek için hemen bir quiz başlat.</p>
+                    <a href="{% url 'quiz_start' %}" class="btn btn-primary px-5 py-3">
+                        <i class="fas fa-play-circle me-2"></i> Quiz Başlat
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Başarı Rozetleri -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title mb-4" data-aos="fade-up">Başarı Rozetlerin</h2>
+        <div class="card p-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="d-flex flex-wrap justify-content-center gap-4">
+                        <div class="text-center">
+                            <div class="bg-primary-light rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
+                                <i class="fas fa-star fa-2x text-primary"></i>
+                            </div>
+                            <p>İlk 10 Kelime</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-primary-light rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
+                                <i class="fas fa-fire fa-2x text-primary"></i>
+                            </div>
+                            <p>3 Gün Streak</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-primary-light rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
+                                <i class="fas fa-medal fa-2x text-primary"></i>
+                            </div>
+                            <p>İlk Quiz</p>
+                        </div>
+                        <div class="text-center opacity-50">
+                            <div class="bg-secondary-light rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
+                                <i class="fas fa-crown fa-2x text-secondary"></i>
+                            </div>
+                            <p>50 Kelime</p>
+                        </div>
+                        <div class="text-center opacity-50">
+                            <div class="bg-secondary-light rounded-circle d-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
+                                <i class="fas fa-trophy fa-2x text-secondary"></i>
+                            </div>
+                            <p>10 Gün Streak</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% else %}
+<!-- Giriş yapmamış kullanıcılar için içerik -->
+<section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+                <h1 class="hero-title">Eğlenerek İngilizce kelimeleri öğren</h1>
+                <p class="hero-text">Word Master ile İngilizce kelime hazineni geliştirmek için etkili, eğlenceli ve kişiselleştirilmiş bir yolculuğa çık.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+                    <a href="{% url 'register' %}" class="btn btn-primary hero-btn" data-aos="fade-up" data-aos-delay="200">Hemen Başla</a>
+                </div>
+                <div class="mt-4 d-flex flex-wrap">
+                    <div class="me-4 mb-3 d-flex align-items-center" data-aos="fade-up" data-aos-delay="300">
+                        <i class="fas fa-check-circle me-2 text-primary"></i>
+                        <span>Her seviyeye uygun</span>
+                    </div>
+                    <div class="me-4 mb-3 d-flex align-items-center" data-aos="fade-up" data-aos-delay="400">
+                        <i class="fas fa-check-circle me-2 text-primary"></i>
+                        <span>Etkili öğrenme metodları</span>
+                    </div>
+                    <div class="mb-3 d-flex align-items-center" data-aos="fade-up" data-aos-delay="500">
+                        <i class="fas fa-check-circle me-2 text-primary"></i>
+                        <span>Her zaman, her yerde</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block text-center" data-aos="fade-left" data-aos-duration="1000">
+                <img src="https://img.freepik.com/free-vector/english-school-landing-page-template_23-2149483592.jpg" 
+                    alt="Word Master" class="img-fluid" style="max-height: 500px;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="features-section">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Hedeflerini belirleyerek başla</h2>
+        <p class="section-subtitle" data-aos="fade-up">Hedeflerine ulaşman için sana dersler, kategoriler ve aktiviteler önereceğiz.</p>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <h3 class="feature-title">Kişisel hedeflerine odaklan</h3>
+                    <p class="feature-text">İş hayatı, seyahat, günlük konuşma veya sınavlar için kelimeleri öğrenmeye odaklan.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">Öğrenme deneyimini kişiselleştir</h3>
+                    <p class="feature-text">Öğrenme hızını, kategorileri ve zorluk seviyesini sen belirle.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="feature-title">Oyunlarla Öğren</h3>
+                    <p class="feature-text">Kelime avı, yapboz ve hızlı quiz oyunlarıyla eğlenerek kelime öğren.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popüler Oyunlar -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Öğrenirken Eğlenin</h2>
+        <p class="section-subtitle" data-aos="fade-up">Word Master'da kelime öğrenmek sadece çalışmak değil, aynı zamanda eğlenceli oyunlarla pratik yapmak demek!</p>
+        
+        <div class="row row-cols-1 row-cols-md-3 g-4 mt-3">
+            <!-- Kelime Avı Oyunu -->
+            <div class="col" data-aos="fade-up" data-aos-delay="100">
+                <div class="card h-100 game-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="game-icon me-3">
+                                <i class="fas fa-bullseye fs-2 text-danger"></i>
+                            </div>
+                            <h3 class="card-title h5 mb-0">Kelime Avı</h3>
+                        </div>
+                        <p class="card-text">Doğru kelimeleri hızlıca seçerek puanınızı artırın! Hızlı düşünme ve refleksinizi geliştirir.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kelime Yapbozu Oyunu -->
+            <div class="col" data-aos="fade-up" data-aos-delay="200">
+                <div class="card h-100 game-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="game-icon me-3">
+                                <i class="fas fa-puzzle-piece fs-2 text-success"></i>
+                            </div>
+                            <h3 class="card-title h5 mb-0">Kelime Yapbozu</h3>
+                        </div>
+                        <p class="card-text">Karışık harfleri doğru sıraya dizip anlamlı kelimeyi oluşturun. Problem çözme yeteneğinizi geliştirir.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hızlı Quiz Oyunu -->
+            <div class="col" data-aos="fade-up" data-aos-delay="300">
+                <div class="card h-100 game-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="game-icon me-3">
+                                <i class="fas fa-hourglass-half fs-2 text-warning"></i>
+                            </div>
+                            <h3 class="card-title h5 mb-0">Zamana Karşı Quiz</h3>
+                        </div>
+                        <p class="card-text">Sınırlı sürede hızlıca soruları cevaplayın. Zaman baskısı altında kelime haznenizi test edin!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="400">
+            <a href="{% url 'register' %}" class="btn btn-primary hero-btn">
+                <i class="fas fa-user-plus me-2"></i> Hemen Kaydol ve Oynamaya Başla
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="about-section">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Word Master Hakkında</h2>
+        <p class="section-subtitle" data-aos="fade-up">Word Master, İngilizce kelime öğrenmek isteyenler için tasarlanmış etkili ve eğlenceli bir platformdur.</p>
+        
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                <h3 class="mb-4 text-gradient">Misyonumuz</h3>
+                <p class="mb-4">Word Master olarak amacımız, dil öğrenmeyi herkes için erişilebilir ve eğlenceli hale getirmektir. Bilimsel metotları oyunlaştırma ile birleştirerek, kullanıcılarımızın motivasyonunu yüksek tutmayı ve öğrenme süreçlerini daha keyifli hale getirmeyi hedefliyoruz.</p>
+                <p>İngilizce kelime öğrenmek isteyenler için özel olarak tasarlanmış platformumuzla, kişiselleştirilmiş öğrenme deneyimi sunarak, kullanıcılarımızın hedeflerine daha hızlı ulaşmalarına yardımcı oluyoruz.</p>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <img src="https://img.freepik.com/free-vector/language-learning-concept-illustration_114360-6011.jpg" alt="Misyonumuz" class="img-fluid rounded-3 shadow">
+            </div>
+        </div>
+        
+        <div class="row mt-5 pt-4">
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">Bilimsel Metodlar</h3>
+                    <p class="feature-text">Bilişsel psikoloji ve bellek araştırmalarına dayalı tekniklerle kelimeleri daha hızlı ve kalıcı öğrenin.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="feature-title">Oyunlaştırma</h3>
+                    <p class="feature-text">Eğlenceli oyunlar ve aktivitelerle öğrenme sürecinizi keyifli hale getirin ve motivasyonunuzu yüksek tutun.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">Kişisel İlerleme</h3>
+                    <p class="feature-text">Detaylı ilerleme analizleri ve raporlarla gelişiminizi takip edin, güçlü ve zayıf yönlerinizi keşfedin.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="contact-section">
+    <div class="container">
+        <h2 class="section-title" data-aos="fade-up">Bizimle İletişime Geçin</h2>
+        <p class="section-subtitle" data-aos="fade-up">Soru, görüş ve önerileriniz için aşağıdaki iletişim formunu kullanabilirsiniz.</p>
+        
+        <div class="row">
+            <div class="col-lg-7 mb-4 mb-lg-0" data-aos="fade-right">
+                <div class="contact-form">
+                    <form method="post" action="{% url 'home' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="contact_form" value="1">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Adınız</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Adınız Soyadınız" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta Adresiniz</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="ornek@email.com" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Konu</label>
+                            <input type="text" class="form-control" id="subject" name="subject" placeholder="Mesajınızın konusu" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Mesajınız</label>
+                            <textarea class="form-control" id="message" name="message" placeholder="Mesajınızı buraya yazın..." required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="contact-btn">Gönder</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-lg-5" data-aos="fade-left">
+                <div class="row">
+                    <div class="col-md-12 mb-4 text-center">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h4>Adres</h4>
+                        <p>İstanbul, Türkiye</p>
+                    </div>
+                    
+                    <div class="col-md-12 mb-4 text-center">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h4>E-posta</h4>
+                        <p>info@wordmaster.com</p>
+                    </div>
+                    
+                    <div class="col-md-12 mb-4 text-center">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <h4>Telefon</h4>
+                        <p>+90 (212) 123 45 67</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary">
+    <div class="container text-center text-white">
+        <h2 class="fw-bold mb-4" data-aos="fade-up">Hemen başla ve ilk dersini tamamla!</h2>
+        <p class="mb-4" data-aos="fade-up" data-aos-delay="100">Sadece 5 dakika sürecek!</p>
+        <div class="d-flex justify-content-center">
+            <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5 py-3" data-aos="fade-up" data-aos-delay="200">Ücretsiz Kaydol</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Progress bar genişliğini ayarla
+        const progressBars = document.querySelectorAll('.progress-bar[data-progress]');
+        progressBars.forEach(bar => {
+            const progress = bar.getAttribute('data-progress');
+            setTimeout(() => {
+                bar.style.width = progress + '%';
+                bar.style.transition = 'width 1s ease';
+            }, 300); // Biraz gecikmeyle başlatarak animasyon etkisi ekle
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                
+                if (targetId !== '#') {
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80, // Offset for fixed navbar
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

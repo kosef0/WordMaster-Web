@@ -1,0 +1,204 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Oyunlar - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-3">Kelime Oyunları</h1>
+            <p class="lead">Öğrenirken eğlenin! Bu oyunlar kelime dağarcığınızı genişletmenize yardımcı olacak.</p>
+        </div>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        <!-- Kelime Tahmin Oyunu -->
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm game-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="game-icon me-3">
+                            <i class="fas fa-brain fs-1 text-primary"></i>
+                        </div>
+                        <h3 class="card-title mb-0">Kelime Tahmin Oyunu</h3>
+                    </div>
+                    <p class="card-text mb-4">
+                        Harf harf tahmin edilen klasik "adam asmaca" benzeri bu oyunda, 
+                        doğru tahmin ettikçe ipuçları ve Türkçesi görünür. 6 yanlışta oyun biter.
+                    </p>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success me-2">YENİ</span>
+                        <small class="text-muted">Geliştirilmiş özellikler:</small>
+                    </div>
+                    <ul class="small mb-4">
+                        <li>Üç farklı zorluk seviyesi (kolay, orta, zor)</li>
+                        <li>Seri sistemi - art arda doğru cevaplar için bonus puanlar</li>
+                        <li>İpucu sistemi - rastgele harfleri gösterme</li>
+                        <li>Animasyonlar ve görsel geri bildirimler</li>
+                    </ul>
+                    <div class="d-grid">
+                        <a href="{% url 'word_guess_game' %}" class="btn btn-primary">
+                            <i class="fas fa-play-circle me-2"></i> Oynamaya Başla
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-primary text-white py-2 d-flex justify-content-between">
+                    <small><i class="fas fa-star me-1"></i> Zorluk: Kolay-Zor</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kelime Avı -->
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm game-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="game-icon me-3">
+                            <i class="fas fa-bullseye fs-1 text-danger"></i>
+                        </div>
+                        <h3 class="card-title mb-0">Kelime Avı</h3>
+                    </div>
+                    <p class="card-text mb-4">
+                        Ekranda hızlıca beliren doğru ve yanlış kelimelerden, sadece doğru anlamı 
+                        ya da çevirisi olanları hızlıca seçin. Refleks kazandırır!
+                    </p>
+                    <div class="d-grid">
+                        <a href="{% url 'word_hunt_game' %}" class="btn btn-danger">
+                            <i class="fas fa-play-circle me-2"></i> Oynamaya Başla
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-danger text-white py-2 d-flex justify-content-between">
+                    <small><i class="fas fa-star me-1"></i> Zorluk: Zor</small>
+                    <small><i class="fas fa-trophy me-1"></i> En Yüksek: {{ best_scores.word_hunt }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kelime Yapbozu -->
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm game-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="game-icon me-3">
+                            <i class="fas fa-puzzle-piece fs-1 text-success"></i>
+                        </div>
+                        <h3 class="card-title mb-0">Kelime Yapbozu</h3>
+                    </div>
+                    <p class="card-text mb-4">
+                        Karışık harfleri doğru sıraya dizip anlamlı kelimeyi oluşturun. Seviye 
+                        ilerledikçe daha uzun ve zor kelimeler sizi bekliyor.
+                    </p>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="badge bg-success me-2">YENİ</span>
+                        <small class="text-muted">Geliştirilmiş özellikler:</small>
+                    </div>
+                    <ul class="small mb-4">
+                        <li>Üç farklı zorluk seviyesi (kolay, orta, zor) - farklı süre limitleri</li>
+                        <li>Seri sistemi - art arda doğru cevaplar için bonus puanlar</li>
+                        <li>İpucu sistemi - kelimenin ilk harfini gösterme</li>
+                        <li>Geliştirilmiş puanlama ve animasyonlar</li>
+                    </ul>
+                    <div class="d-grid">
+                        <a href="{% url 'word_puzzle_game' %}" class="btn btn-success">
+                            <i class="fas fa-play-circle me-2"></i> Oynamaya Başla
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-success text-white py-2 d-flex justify-content-between">
+                    <small><i class="fas fa-star me-1"></i> Zorluk: Kolay-Zor</small>
+                    <small><i class="fas fa-trophy me-1"></i> En Yüksek: {{ best_scores.word_puzzle }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Zamana Karşı Test -->
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm game-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="game-icon me-3">
+                            <i class="fas fa-hourglass-half fs-1 text-warning"></i>
+                        </div>
+                        <h3 class="card-title mb-0">Zamana Karşı Test</h3>
+                    </div>
+                    <p class="card-text mb-4">
+                        30 saniyede 5 soru gibi sınırlı sürede çoktan seçmeli sorulara yanıt verin. 
+                        Ne kadar hızlı doğru cevap verirseniz o kadar yüksek puan alırsınız.
+                    </p>
+                    <div class="d-grid">
+                        <a href="{% url 'speed_quiz_game' %}" class="btn btn-warning text-dark">
+                            <i class="fas fa-play-circle me-2"></i> Oynamaya Başla
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-warning text-dark py-2 d-flex justify-content-between">
+                    <small><i class="fas fa-star me-1"></i> Zorluk: Orta-Zor</small>
+                    <small><i class="fas fa-trophy me-1"></i> En Yüksek: {{ best_scores.speed_quiz }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-5 p-4 bg-light rounded-3">
+        <h4 class="mb-3">Oyunlar Hakkında</h4>
+        <p>
+            Kelime oyunları, dil öğrenme sürecinizin eğlenceli bir parçasıdır. Bu oyunlar sayesinde:
+        </p>
+        <ul>
+            <li>Öğrendiğiniz kelimeleri pratik yapabilirsiniz</li>
+            <li>Kelime hatırlama hızınızı artırabilirsiniz</li>
+            <li>Oyun oynarken farkında olmadan yeni kelimeler öğrenebilirsiniz</li>
+            <li>Rekabetçi puanlama sistemi ile motivasyonunuzu yüksek tutabilirsiniz</li>
+        </ul>
+        <p class="mb-0">
+            Düzenli olarak oynayarak hem eğlenin hem de kelime dağarcığınızı geliştirin!
+        </p>
+    </div>
+    
+    <div class="text-center mt-5">
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-home me-2"></i> Ana Sayfaya Dön
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        overflow: hidden;
+    }
+    
+    .game-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .game-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    .card-footer {
+        border-top: none;
+    }
+    
+    .badge {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %} 

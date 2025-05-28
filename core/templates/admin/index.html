@@ -1,0 +1,329 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+    .app-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .app-item {
+        flex: 1;
+        min-width: 300px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+    
+    .app-header {
+        background: linear-gradient(135deg, #1cb0f6 0%, #4cc9f0 100%);
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .app-header i {
+        font-size: 24px;
+        margin-right: 10px;
+    }
+    
+    .app-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .app-content {
+        padding: 15px 20px;
+    }
+    
+    .model-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .model-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .model-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .model-link {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.2s ease;
+    }
+    
+    .model-link:hover {
+        color: #1cb0f6;
+    }
+    
+    .model-link i {
+        margin-right: 8px;
+        color: #1cb0f6;
+        width: 20px;
+        text-align: center;
+    }
+    
+    .model-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+    }
+    
+    .model-action {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        text-decoration: none;
+        color: white;
+        background-color: #1cb0f6;
+        transition: all 0.2s ease;
+    }
+    
+    .model-action:hover {
+        background-color: #1184c1;
+    }
+    
+    .welcome-message {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .welcome-message h1 {
+        color: #1cb0f6;
+        margin-top: 0;
+        font-size: 24px;
+    }
+    
+    .dashboard-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card {
+        flex: 1;
+        min-width: 200px;
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card .icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: #1cb0f6;
+    }
+    
+    .stat-card .number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+    }
+    
+    .stat-card .label {
+        color: #666;
+    }
+    
+    .recent-actions {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .recent-actions h2 {
+        color: #333;
+        margin-top: 0;
+        font-size: 18px;
+        font-weight: 600;
+        border-bottom: 1px solid #f5f5f5;
+        padding-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="welcome-message">
+        <h1>{% trans 'Word Master Yönetim Paneline Hoş Geldiniz' %}</h1>
+        <p>{% trans 'Bu panelden kelimeler, kategoriler, kullanıcılar ve diğer tüm verileri yönetebilirsiniz.' %}</p>
+    </div>
+    
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <div class="number">{{ user_count|default:"0" }}</div>
+            <div class="label">{% trans 'Kullanıcılar' %}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-language"></i></div>
+            <div class="number">{{ word_count|default:"0" }}</div>
+            <div class="label">{% trans 'Kelimeler' %}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-folder"></i></div>
+            <div class="number">{{ category_count|default:"0" }}</div>
+            <div class="label">{% trans 'Kategoriler' %}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="icon"><i class="fas fa-question-circle"></i></div>
+            <div class="number">{{ quiz_count|default:"0" }}</div>
+            <div class="label">{% trans 'Quizler' %}</div>
+        </div>
+    </div>
+    
+    <div class="app-list">
+    {% for app in app_list %}
+        <div class="app-item">
+            <div class="app-header">
+                {% if app.app_label == 'core' %}
+                <i class="fas fa-language"></i>
+                {% elif app.app_label == 'auth' %}
+                <i class="fas fa-users"></i>
+                {% else %}
+                <i class="fas fa-cog"></i>
+                {% endif %}
+                <h2>{{ app.name }}</h2>
+            </div>
+            <div class="app-content">
+                <ul class="model-list">
+                {% for model in app.models %}
+                    <li>
+                        <a href="{{ model.admin_url }}" class="model-link">
+                            {% if model.object_name == 'Category' %}
+                            <i class="fas fa-folder"></i>
+                            {% elif model.object_name == 'Word' %}
+                            <i class="fas fa-language"></i>
+                            {% elif model.object_name == 'User' %}
+                            <i class="fas fa-user"></i>
+                            {% elif model.object_name == 'Group' %}
+                            <i class="fas fa-users"></i>
+                            {% elif model.object_name == 'UserProfile' %}
+                            <i class="fas fa-id-card"></i>
+                            {% elif model.object_name == 'Quiz' %}
+                            <i class="fas fa-question-circle"></i>
+                            {% elif model.object_name == 'LearningPath' %}
+                            <i class="fas fa-road"></i>
+                            {% elif model.object_name == 'UserProgress' %}
+                            <i class="fas fa-chart-line"></i>
+                            {% elif model.object_name == 'GameScore' %}
+                            <i class="fas fa-gamepad"></i>
+                            {% else %}
+                            <i class="fas fa-circle"></i>
+                            {% endif %}
+                            {{ model.name }}
+                            <div class="model-actions">
+                                {% if model.add_url %}
+                                <a href="{{ model.add_url }}" class="model-action">{% trans 'Ekle' %}</a>
+                                {% endif %}
+                                {% if model.admin_url %}
+                                <a href="{{ model.admin_url }}" class="model-action">{% trans 'Değiştir' %}</a>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    
+    <div class="recent-actions">
+        <h2>{% trans 'Son İşlemler' %}</h2>
+        {% load log %}
+        {% get_admin_log 10 as admin_log %}
+        {% if not admin_log %}
+        <p>{% trans 'Hiç işlem kaydı yok.' %}</p>
+        {% else %}
+        <ul class="model-list">
+            {% for entry in admin_log %}
+            <li>
+                <a class="model-link">
+                    {% if entry.is_addition %}
+                    <i class="fas fa-plus-circle" style="color: #28a745;"></i>
+                    {% elif entry.is_change %}
+                    <i class="fas fa-edit" style="color: #ffc107;"></i>
+                    {% elif entry.is_deletion %}
+                    <i class="fas fa-trash-alt" style="color: #dc3545;"></i>
+                    {% endif %}
+                    {{ entry.object_repr }}
+                    {% if entry.content_type %}
+                    <span class="mini quiet">({{ entry.content_type.name }})</span>
+                    {% endif %}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module">
+        <h2>{% trans 'Hızlı Erişim' %}</h2>
+        <ul class="model-list">
+            <li>
+                <a href="{% url 'statistics' %}" class="model-link">
+                    <i class="fas fa-chart-bar"></i>
+                    {% trans 'İstatistikler' %}
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin:core_category_changelist' %}" class="model-link">
+                    <i class="fas fa-folder"></i>
+                    {% trans 'Kategoriler' %}
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin:core_word_changelist' %}" class="model-link">
+                    <i class="fas fa-language"></i>
+                    {% trans 'Kelimeler' %}
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'admin:auth_user_changelist' %}" class="model-link">
+                    <i class="fas fa-users"></i>
+                    {% trans 'Kullanıcılar' %}
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %} 

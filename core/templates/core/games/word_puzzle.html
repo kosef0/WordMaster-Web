@@ -1,0 +1,453 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Kelime Yapbozu - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-3">Kelime Yapbozu</h1>
+            <p class="lead">Karışık harflerden doğru kelimeyi oluşturun!</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'game_menu' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Oyun Menüsüne Dön
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div id="word-puzzle-game">
+                        <!-- Oyun bilgileri -->
+                        <div class="game-info row mb-4 text-center">
+                            <div class="col-4">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body py-2">
+                                        <h5 class="mb-1">Skor</h5>
+                                        <h3 id="score" class="mb-0">0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body py-2">
+                                        <h5 class="mb-1">En Yüksek</h5>
+                                        <h3 id="best-score" class="mb-0">{{ best_score }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body py-2">
+                                        <h5 class="mb-1">İpucu</h5>
+                                        <p id="hint" class="mb-0">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Yapboz alanı -->
+                        <div class="puzzle-area text-center mb-4">
+                            <div class="target-word mb-3">
+                                <h6 class="text-muted mb-2">Anlamı:</h6>
+                                <h4 id="turkish-word" class="mb-4">-----</h4>
+                            </div>
+                            
+                            <div class="letters-area mb-4">
+                                <div id="scrambled-letters" class="d-flex justify-content-center flex-wrap mb-4">
+                                    <!-- Harfler burada gösterilecek -->
+                                </div>
+                                
+                                <div id="word-solution" class="d-flex justify-content-center mb-3">
+                                    <!-- Çözüm alanı burada gösterilecek -->
+                                </div>
+                                
+                                <button id="clearBtn" class="btn btn-sm btn-outline-secondary me-2">
+                                    <i class="fas fa-eraser me-1"></i> Temizle
+                                </button>
+                                <button id="checkBtn" class="btn btn-sm btn-success">
+                                    <i class="fas fa-check me-1"></i> Kontrol Et
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Oyun durumu -->
+                        <div id="game-status" class="alert d-none mb-4"></div>
+                        
+                        <!-- Kontroller -->
+                        <div class="text-center">
+                            <button id="nextWordBtn" class="btn btn-primary">
+                                <i class="fas fa-forward me-2"></i> Sonraki Kelime
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .letter-box {
+        width: 45px;
+        height: 45px;
+        margin: 5px;
+        border-radius: 6px;
+        font-size: 20px;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s;
+    }
+    
+    .scrambled-letter {
+        background-color: #f8f9fa;
+        border: 2px solid #dee2e6;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .scrambled-letter:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .scrambled-letter.used {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .solution-letter {
+        background-color: #e9ecef;
+        border: 2px dashed #ced4da;
+    }
+    
+    .solution-letter.filled {
+        border: 2px solid #28a745;
+        background-color: #d1e7dd;
+    }
+    
+    @keyframes correct {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); background-color: #28a745; color: white; }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes wrong {
+        0% { transform: translateX(0); }
+        20% { transform: translateX(-10px); }
+        40% { transform: translateX(10px); }
+        60% { transform: translateX(-10px); }
+        80% { transform: translateX(10px); }
+        100% { transform: translateX(0); }
+    }
+    
+    .correct {
+        animation: correct 0.6s;
+    }
+    
+    .wrong {
+        animation: wrong 0.6s;
+        background-color: #f8d7da !important;
+        border-color: #dc3545 !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Django verilerini JSON olarak hazırlama -->
+<script id="puzzle-data" type="application/json">
+{
+    "words": [
+        {% for word in words %}
+        {
+            "english": "{{ word.english|escapejs }}",
+            "turkish": "{{ word.turkish|escapejs }}",
+            "hint": "{{ word.definition|default:'İpucu yok'|escapejs }}",
+            "category": "{{ word.category.name|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+        {% empty %}
+        {"english": "apple", "turkish": "elma", "hint": "Kırmızı veya yeşil olabilen bir meyve", "category": "Yiyecekler"},
+        {"english": "house", "turkish": "ev", "hint": "İnsanların yaşadığı yapı", "category": "Mekanlar"},
+        {"english": "book", "turkish": "kitap", "hint": "Okumak için sayfalardan oluşan nesne", "category": "Nesneler"},
+        {"english": "water", "turkish": "su", "hint": "İçtiğimiz berrak sıvı", "category": "İçecekler"}
+        {% endfor %}
+    ]
+}
+</script>
+
+<!-- Oyun mantığını içeren JavaScript kodu -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Django şablonundan JSON verilerini al
+        const puzzleDataElement = document.getElementById('puzzle-data');
+        const puzzleData = JSON.parse(puzzleDataElement.textContent);
+        const words = puzzleData.words;
+        
+        // Filtrelenmiş kelimeler - başlangıç için kolay kelimeler (3-6 harf)
+        const filteredWords = words.filter(word => word.english.length >= 3 && word.english.length <= 6);
+        const gameWords = filteredWords.length > 0 ? filteredWords : words;
+        
+        // DOM elementleri
+        const scoreElement = document.getElementById('score');
+        const bestScoreElement = document.getElementById('best-score');
+        const hintElement = document.getElementById('hint');
+        const turkishWordElement = document.getElementById('turkish-word');
+        const scrambledLettersElement = document.getElementById('scrambled-letters');
+        const wordSolutionElement = document.getElementById('word-solution');
+        const clearBtn = document.getElementById('clearBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        const nextWordBtn = document.getElementById('nextWordBtn');
+        const gameStatus = document.getElementById('game-status');
+        
+        // Oyun değişkenleri
+        let score = 0;
+        let bestScore = parseInt(bestScoreElement.textContent) || 0;
+        let currentWordObj = null;
+        let currentWord = "";
+        let currentCategory = "";
+        let scrambledLetters = [];
+        let solutionBoxes = [];
+        let selectedLetters = [];
+        
+        // Harfleri karıştır
+        function scrambleWord(word) {
+            const letters = word.split('');
+            for (let i = letters.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [letters[i], letters[j]] = [letters[j], letters[i]];
+            }
+            return letters;
+        }
+        
+        // Karışık harfleri göster
+        function displayScrambledLetters() {
+            scrambledLettersElement.innerHTML = '';
+            
+            scrambledLetters.forEach((letter, index) => {
+                const letterBox = document.createElement('div');
+                letterBox.className = 'letter-box scrambled-letter';
+                letterBox.textContent = letter.toUpperCase();
+                letterBox.dataset.index = index;
+                letterBox.dataset.letter = letter;
+                
+                if (selectedLetters.includes(index)) {
+                    letterBox.classList.add('used');
+                }
+                
+                letterBox.addEventListener('click', handleLetterClick);
+                
+                scrambledLettersElement.appendChild(letterBox);
+            });
+        }
+        
+        // Çözüm kutularını oluştur
+        function createSolutionBoxes() {
+            wordSolutionElement.innerHTML = '';
+            solutionBoxes = [];
+            
+            for (let i = 0; i < currentWord.length; i++) {
+                const letterBox = document.createElement('div');
+                letterBox.className = 'letter-box solution-letter';
+                letterBox.dataset.index = i;
+                
+                solutionBoxes.push(letterBox);
+                wordSolutionElement.appendChild(letterBox);
+            }
+        }
+        
+        // Harf tıklama olayını işle
+        function handleLetterClick(event) {
+            const letterBox = event.target;
+            const index = parseInt(letterBox.dataset.index);
+            
+            if (selectedLetters.includes(index)) return; // Zaten seçilmiş harfi tekrar seçme
+            
+            const letter = letterBox.dataset.letter;
+            
+            // İlk boş kutuya harfi yerleştir
+            for (let i = 0; i < solutionBoxes.length; i++) {
+                if (!solutionBoxes[i].textContent) {
+                    solutionBoxes[i].textContent = letter.toUpperCase();
+                    solutionBoxes[i].dataset.letterIndex = index;
+                    solutionBoxes[i].classList.add('filled');
+                    
+                    // Harfi kullanılmış olarak işaretle
+                    letterBox.classList.add('used');
+                    selectedLetters.push(index);
+                    
+                    // Tüm kutular dolduysa otomatik kontrol et
+                    if (selectedLetters.length === currentWord.length) {
+                        checkWord();
+                    }
+                    
+                    break;
+                }
+            }
+        }
+        
+        // Cevabı temizle
+        function clearAnswer() {
+            // Çözüm kutularını temizle
+            solutionBoxes.forEach(box => {
+                box.textContent = '';
+                box.classList.remove('filled');
+                delete box.dataset.letterIndex;
+            });
+            
+            // Harfleri kullanılabilir hale getir
+            document.querySelectorAll('.scrambled-letter').forEach(letter => {
+                letter.classList.remove('used');
+            });
+            
+            // Seçili harfleri sıfırla
+            selectedLetters = [];
+        }
+        
+        // Kelimeyi kontrol et
+        function checkWord() {
+            const answer = solutionBoxes.map(box => box.textContent || '').join('').toLowerCase();
+            
+            if (answer === currentWord.toLowerCase()) {
+                // Doğru cevap
+                wordSolutionElement.classList.add('correct');
+                
+                // Puanı artır (kelime uzunluğuna göre)
+                const wordPoints = currentWord.length * 5;
+                score += wordPoints;
+                scoreElement.textContent = score;
+                
+                // En yüksek puanı kontrol et ve güncelle
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestScoreElement.textContent = bestScore;
+                    updateBestScore();
+                }
+                
+                // Başarı mesajı
+                gameStatus.textContent = `Tebrikler! +${wordPoints} puan kazandınız.`;
+                gameStatus.className = 'alert alert-success text-center';
+                gameStatus.classList.remove('d-none');
+                
+                // Kelime anlamını ve çevirisini göster
+                turkishWordElement.textContent = currentWordObj.turkish;
+                
+                // Kutulara tıklamayı devre dışı bırak
+                document.querySelectorAll('.scrambled-letter').forEach(letter => {
+                    letter.removeEventListener('click', handleLetterClick);
+                });
+                
+                setTimeout(() => {
+                    wordSolutionElement.classList.remove('correct');
+                }, 1000);
+                
+                return true;
+            } else {
+                // Yanlış cevap
+                wordSolutionElement.classList.add('wrong');
+                
+                // Hata mesajı
+                gameStatus.textContent = `Yanlış cevap! Tekrar deneyin.`;
+                gameStatus.className = 'alert alert-danger text-center';
+                gameStatus.classList.remove('d-none');
+                
+                setTimeout(() => {
+                    wordSolutionElement.classList.remove('wrong');
+                    gameStatus.classList.add('d-none');
+                }, 1000);
+                
+                return false;
+            }
+        }
+        
+        // En yüksek skoru sunucuya gönder
+        function updateBestScore() {
+            fetch('/games/update-score/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    game_type: 'word_puzzle',
+                    score: bestScore
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('En yüksek skor güncellendi:', data.best_score);
+                }
+            })
+            .catch(error => {
+                console.error('Skor güncellenirken hata:', error);
+            });
+        }
+        
+        // CSRF token cookie değerini al
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        // Yeni kelime yükle
+        function loadNewWord() {
+            // Rastgele bir kelime seç
+            const randomIndex = Math.floor(Math.random() * gameWords.length);
+            currentWordObj = gameWords[randomIndex];
+            currentWord = currentWordObj.english;
+            currentCategory = currentWordObj.category;
+            
+            // Türkçe anlamı gizle, sadece başlangıçta göster
+            turkishWordElement.textContent = "?????";
+            
+            // İpucunu göster
+            hintElement.textContent = "Kategori: " + currentCategory;
+            
+            // Harfleri karıştır
+            scrambledLetters = scrambleWord(currentWord);
+            
+            // Karışık harfleri ve çözüm kutularını göster
+            displayScrambledLetters();
+            createSolutionBoxes();
+            
+            // Oyun durumunu sıfırla
+            gameStatus.classList.add('d-none');
+            selectedLetters = [];
+        }
+        
+        // Buton olaylarını tanımla
+        clearBtn.addEventListener('click', clearAnswer);
+        
+        checkBtn.addEventListener('click', function() {
+            // Tüm harfler yerleştirilmiş mi kontrol et
+            if (selectedLetters.length === currentWord.length) {
+                checkWord();
+            } else {
+                gameStatus.textContent = `Lütfen tüm harfleri yerleştirin.`;
+                gameStatus.className = 'alert alert-warning text-center';
+                gameStatus.classList.remove('d-none');
+                
+                setTimeout(() => {
+                    gameStatus.classList.add('d-none');
+                }, 2000);
+            }
+        });
+        
+        nextWordBtn.addEventListener('click', loadNewWord);
+        
+        // Oyunu başlat
+        loadNewWord();
+    });
+</script>
+{% endblock %} 

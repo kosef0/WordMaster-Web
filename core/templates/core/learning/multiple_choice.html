@@ -1,0 +1,371 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ step.name }} - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="mb-3">{{ step.name }}</h1>
+            <p class="lead">{{ step.description }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a href="{% url 'learning_panel' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Öğrenme Paneline Dön
+            </a>
+        </div>
+    </div>
+    
+    <div class="progress mb-4">
+        <div id="progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form id="quiz-form">
+                        {% for word in words %}
+                            <div class="quiz-question mb-5" data-question="{{ forloop.counter }}" {% if not forloop.first %}style="display: none;"{% endif %}>
+                                <div class="quiz-number d-flex align-items-center mb-3">
+                                    <span class="badge bg-primary rounded-pill">Soru {{ forloop.counter }}/{{ words|length }}</span>
+                                </div>
+                                
+                                <h4 class="mb-4 question-text">{{ word.english }} kelimesinin Türkçe karşılığı nedir?</h4>
+                                
+                                <div class="options">
+                                    {% for option in word.options %}
+                                        <div class="form-check custom-option mb-3">
+                                            <input class="form-check-input" type="radio" name="answer_{{ forloop.parentloop.counter }}" value="{{ option }}" id="option_{{ forloop.parentloop.counter }}_{{ forloop.counter }}" data-correct="{% if option == word.turkish %}true{% else %}false{% endif %}">
+                                            <label class="form-check-label d-block" for="option_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                                                {{ option }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mt-4 text-end">
+                                    {% if not forloop.last %}
+                                        <button type="button" class="btn btn-primary next-question">Sonraki Soru</button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check me-2"></i> Cevapları Kontrol Et
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </form>
+                    
+                    <div id="success-message" class="alert alert-success mt-4 text-center" style="display: none;">
+                        <h4><i class="fas fa-check-circle"></i> Tebrikler!</h4>
+                        <p>Testi başarıyla tamamladınız.</p>
+                        <div id="result-details" class="mb-3">
+                            <span class="badge bg-success p-2 fs-6"><span id="correct-count">0</span>/<span id="total-questions">{{ words|length }}</span> doğru</span>
+                        </div>
+                        <a id="next-step-button" href="#" class="btn btn-success mt-2">
+                            <i class="fas fa-arrow-right me-2"></i> Sonraki Adıma Geç
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress {
+    height: 10px;
+    border-radius: 10px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+.quiz-number {
+    margin-bottom: 15px;
+}
+
+.quiz-number .badge {
+    font-size: 14px;
+    padding: 8px 16px;
+}
+
+.question-text {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+.custom-option {
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.custom-option:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.custom-option.selected {
+    border-color: #1cb0f6;
+    background-color: rgba(28, 176, 246, 0.05);
+}
+
+.custom-option.correct {
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.custom-option.incorrect {
+    border-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.form-check-input {
+    margin-top: 3px;
+}
+
+.form-check-label {
+    font-size: 18px;
+    padding-left: 10px;
+}
+
+.next-question {
+    transition: all 0.3s ease;
+}
+
+.next-question:hover {
+    transform: translateX(5px);
+}
+
+#success-message {
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+    padding: 25px;
+}
+
+#result-details {
+    margin: 20px 0;
+}
+
+#result-details .badge {
+    margin: 0 5px;
+}
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('quiz-form');
+    const questions = document.querySelectorAll('.quiz-question');
+    const progressBar = document.getElementById('progress-bar');
+    const successMessage = document.getElementById('success-message');
+    const nextStepButton = document.getElementById('next-step-button');
+    const correctCountElement = document.getElementById('correct-count');
+    const totalQuestionsElement = document.getElementById('total-questions');
+    
+    let currentQuestion = 1;
+    const totalQuestions = questions.length;
+    
+    // İlerleme çubuğunu güncelle
+    function updateProgressBar() {
+        const progress = (currentQuestion - 1) / totalQuestions * 100;
+        progressBar.style.width = progress + '%';
+        progressBar.setAttribute('aria-valuenow', progress);
+        progressBar.textContent = Math.round(progress) + '%';
+    }
+    
+    // Sonraki soru butonlarını etkinleştir
+    document.querySelectorAll('.next-question').forEach(button => {
+        button.addEventListener('click', function() {
+            const questionDiv = this.closest('.quiz-question');
+            const questionNumber = parseInt(questionDiv.dataset.question);
+            
+            // Seçim yapıldığından emin ol
+            const selectedOption = questionDiv.querySelector('input[type="radio"]:checked');
+            if (!selectedOption) {
+                alert('Lütfen bir seçenek işaretleyin.');
+                return;
+            }
+            
+            // Mevcut soruyu gizle
+            questionDiv.style.display = 'none';
+            
+            // Sonraki soruyu göster
+            currentQuestion = questionNumber + 1;
+            document.querySelector(`.quiz-question[data-question="${currentQuestion}"]`).style.display = 'block';
+            
+            // İlerleme çubuğunu güncelle
+            updateProgressBar();
+        });
+    });
+    
+    // Seçenek tıklamalarını işle
+    document.querySelectorAll('.custom-option').forEach(option => {
+        const radioInput = option.querySelector('input[type="radio"]');
+        
+        option.addEventListener('click', function() {
+            // Radio input'u seç
+            radioInput.checked = true;
+            
+            // Aynı soru içindeki diğer seçenekleri temizle
+            const questionDiv = this.closest('.quiz-question');
+            questionDiv.querySelectorAll('.custom-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Bu seçeneği seçili olarak işaretle
+            this.classList.add('selected');
+        });
+    });
+    
+    // Sonraki adım butonuna tıklandığında
+    nextStepButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Kategori ve adım ID'lerini URL'den al
+        const urlParts = window.location.pathname.split('/');
+        const categoryId = urlParts[urlParts.length - 3]; // URL'in sondan üçüncü parçası
+        const currentStepId = urlParts[urlParts.length - 2]; // URL'in sondan ikinci parçası
+        
+        // Bir sonraki adımın ID'si (mevcut adım + 1)
+        const nextStepId = parseInt(currentStepId) + 1;
+        
+        // Sonraki adıma yönlendir
+        window.location.href = `/learning-step/${categoryId}/${nextStepId}/`;
+    });
+    
+    // Formu gönderme
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const answers = [];
+        const correctAnswers = [];
+        let correctCount = 0;
+        
+        // Tüm cevapları topla
+        for (let i = 1; i <= totalQuestions; i++) {
+            const radioInputs = document.querySelectorAll(`input[name="answer_${i}"]`);
+            const selectedInput = Array.from(radioInputs).find(input => input.checked);
+            
+            if (selectedInput) {
+                answers.push(selectedInput.value);
+                
+                // Doğru cevabı bul
+                const correctInput = Array.from(radioInputs).find(input => input.dataset.correct === 'true');
+                correctAnswers.push(correctInput.value);
+                
+                // Doğru cevap sayısını hesapla
+                if (selectedInput.dataset.correct === 'true') {
+                    correctCount++;
+                }
+            } else {
+                // Eğer bir soru cevaplandırılmadıysa boş cevap ekle
+                answers.push('');
+                
+                // Yine de doğru cevabı ekle
+                const correctInput = Array.from(radioInputs).find(input => input.dataset.correct === 'true');
+                correctAnswers.push(correctInput.value);
+            }
+        }
+        
+        // Sonuç bilgisini güncelle
+        correctCountElement.textContent = correctCount;
+        totalQuestionsElement.textContent = totalQuestions;
+        
+        // AJAX ile cevapları gönder
+        fetch(`{% url 'check_step_completion' category.id step.id %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: new URLSearchParams({
+                'answers[]': answers,
+                'correct_answers[]': correctAnswers
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Doğru ve yanlış cevapları işaretle
+            document.querySelectorAll('input[type="radio"]').forEach(input => {
+                const optionDiv = input.closest('.custom-option');
+                
+                if (input.checked) {
+                    if (input.dataset.correct === 'true') {
+                        optionDiv.classList.add('correct');
+                    } else {
+                        optionDiv.classList.add('incorrect');
+                        
+                        // Doğru cevabı da göster
+                        const questionDiv = input.closest('.quiz-question');
+                        const correctInput = questionDiv.querySelector('input[data-correct="true"]');
+                        correctInput.closest('.custom-option').classList.add('correct');
+                    }
+                } else if (input.dataset.correct === 'true') {
+                    // Seçilmemiş doğru cevapları da göster
+                    optionDiv.classList.add('correct');
+                }
+            });
+            
+            // Tüm soruları görünür yap
+            questions.forEach(question => {
+                question.style.display = 'block';
+            });
+            
+            // Butonu gizle
+            form.querySelector('button[type="submit"]').style.display = 'none';
+            
+            if (data.success) {
+                // Başarı mesajını göster
+                successMessage.style.display = 'block';
+                
+                // Sayfaya kaydır
+                successMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                // Hata durumunda bile sonraki adıma geçme butonunu göster
+                if (correctCount >= Math.ceil(totalQuestions * 0.6)) {  // En az %60 başarı
+                    successMessage.style.display = 'block';
+                    successMessage.querySelector('p').textContent = 'Test sonucunuz yeterli. Bir sonraki adıma geçebilirsiniz.';
+                } else {
+                    alert('Başarı yüzdeniz yetersiz. Tekrar deneyin!');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Fetch hatası:', error);
+            alert("Bir hata oluştu: " + error.message);
+        });
+    });
+    
+    // CSRF token'ı al
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // İlk yükleme
+    updateProgressBar();
+});
+</script>
+{% endblock %}
+{% endblock %} 

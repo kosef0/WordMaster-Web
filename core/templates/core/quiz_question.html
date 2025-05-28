@@ -1,0 +1,104 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Quiz Sorusu - Word Master{% endblock %}
+
+{% block content %}
+<div class="quiz-container animated">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-times me-2"></i> Çık
+        </a>
+        <div class="streak-counter">
+            <i class="fas fa-fire"></i>
+            <span class="streak-count">3</span>
+            <span>gün</span>
+        </div>
+    </div>
+    
+    <div class="progress-bar">
+        <div class="progress" style="width: {% widthratio question_number total_questions 100 %}%;"></div>
+    </div>
+    
+    <div class="quiz-question">
+        <h2 class="fw-bold">{{ question.word.english }}</h2>
+        <button class="btn btn-sm btn-secondary pronunciation-btn mt-2" data-word="{{ question.word.english }}">
+            <i class="fas fa-volume-up"></i>
+        </button>
+    </div>
+    
+    <div class="mb-4 text-center">
+        <p class="fs-5">Bu kelimenin Türkçe karşılığı nedir?</p>
+    </div>
+    
+    <form action="{% url 'quiz_answer' quiz.id question_number %}" method="post">
+        {% csrf_token %}
+        
+        <div class="quiz-options">
+            {% for option in options %}
+            <div class="quiz-option" onclick="selectOption(this, '{{ option.id }}')">
+                <input type="radio" name="answer" value="{{ option.id }}" id="option{{ forloop.counter }}" style="display: none;">
+                {{ option.turkish }}
+            </div>
+            {% empty %}
+            <div class="alert alert-warning">
+                Seçenekler bulunamadı.
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="quiz-footer">
+            {% if question_number > 1 %}
+            <a href="{% url 'quiz_question' quiz.id question_number|add:'-1' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Önceki
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %}
+            
+            <button type="submit" class="btn btn-primary" id="submitButton" disabled>
+                Kontrol Et
+            </button>
+        </div>
+    </form>
+    
+    <div class="text-center text-muted mt-4">
+        <small>Soru {{ question_number }} / {{ total_questions }}</small>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Telaffuz butonlarına tıklama işlevi
+    const pronunciationBtns = document.querySelectorAll('.pronunciation-btn');
+    
+    pronunciationBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const word = this.dataset.word;
+            
+            // Ses dosyasını çal
+            const audio = new Audio(`/api/pronunciation/?word=${encodeURIComponent(word)}`);
+            audio.play();
+        });
+    });
+});
+
+function selectOption(element, optionId) {
+    // Seçili olan bir önceki seçeneği temizle
+    document.querySelectorAll('.quiz-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    
+    // Seçilen seçeneği işaretle
+    element.classList.add('selected');
+    
+    // Radio input'u seç
+    document.querySelector(`input[value="${optionId}"]`).checked = true;
+    
+    // Submit butonunu etkinleştir
+    document.getElementById('submitButton').disabled = false;
+}
+</script>
+{% endblock %} 

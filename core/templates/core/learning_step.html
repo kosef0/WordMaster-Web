@@ -1,0 +1,94 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ learning_step.name }} - {{ category.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="mb-3">{{ learning_step.name }}</h1>
+            <p class="lead">{{ learning_step.description }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end d-flex align-items-center justify-content-lg-end">
+            <a href="{% url 'learning_category' category.id %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Adımlara Dön
+            </a>
+        </div>
+    </div>
+    
+    {% if learning_step.step_type == 'vocabulary' %}
+        {% include 'core/learning_steps/vocabulary.html' %}
+    {% elif learning_step.step_type == 'matching' %}
+        {% include 'core/learning_steps/matching.html' %}
+    {% elif learning_step.step_type == 'multiple_choice' %}
+        {% include 'core/learning_steps/multiple_choice.html' %}
+    {% elif learning_step.step_type == 'writing' %}
+        {% include 'core/learning_steps/writing.html' %}
+    {% elif learning_step.step_type == 'listening' %}
+        {% include 'core/learning_steps/listening.html' %}
+    {% elif learning_step.step_type == 'final_quiz' %}
+        {% include 'core/learning_steps/final_quiz.html' %}
+    {% endif %}
+    
+    {% if step_progress.completed %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title">Tebrikler! Bu adımı tamamladınız.</h3>
+                    <p class="card-text">Puanınız: {{ step_progress.score }}/{{ step_progress.max_score }}</p>
+                    
+                    {% if next_step %}
+                        <a href="{% url 'learning_step' next_step.id %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-right me-2"></i> Sonraki Adıma Geç
+                        </a>
+                    {% else %}
+                        <a href="{% url 'learning_category' category.id %}" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i> Tüm Adımları Tamamladınız
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Adım tamamlandığında AJAX ile sunucuya bildir
+        function completeStep(score, maxScore) {
+            fetch('{% url "complete_learning_step" learning_step.id %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    score: score,
+                    max_score: maxScore
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Başarılı olduğunda sayfayı yenile
+                    window.location.reload();
+                } else {
+                    alert('Hata: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+            });
+        }
+        
+        // Global scope'a fonksiyonu ekle
+        window.completeStep = completeStep;
+    });
+</script>
+{% endblock %} 

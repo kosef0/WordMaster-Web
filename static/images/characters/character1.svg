@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Duolingo tarzı karakter -->
+  <circle cx="40" cy="40" r="36" fill="#58CC02"/>
+  
+  <!-- Gözler -->
+  <circle cx="28" cy="30" r="6" fill="white"/>
+  <circle cx="52" cy="30" r="6" fill="white"/>
+  <circle cx="28" cy="30" r="3" fill="#333"/>
+  <circle cx="52" cy="30" r="3" fill="#333"/>
+  
+  <!-- Gülümseyen ağız -->
+  <path d="M28 50 Q40 60 52 50" stroke="#333" stroke-width="3" fill="none"/>
+  
+  <!-- Kaşlar -->
+  <path d="M22 24 L32 27" stroke="#333" stroke-width="2" fill="none"/>
+  <path d="M48 27 L58 24" stroke="#333" stroke-width="2" fill="none"/>
+</svg> 

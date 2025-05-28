@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Giriş Yap - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0 text-center">Word Master'a Giriş Yap</h3>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-center mb-4">Hesabına giriş yap ve İngilizce öğrenmeye devam et.</p>
+                    
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field.errors }}
+                                {{ field|add_class:"form-control" }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Giriş Yap</button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <p>Henüz bir hesabın yok mu? <a href="{% url 'register' %}">Üye Ol</a></p>
+                        <p class="mb-0"><a href="#">Şifremi Unuttum</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title mb-3">Neden Word Master?</h5>
+                    <p class="mb-0">İngilizce kelime öğrenmenin en eğlenceli ve etkili yolu. Kategorilere göre düzenlenmiş kelimeler, quizler ve ilerleme takibi ile İngilizce kelime hazineni hızla geliştir.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Django form alanlarına Bootstrap sınıflarını eklemek için
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hata olan alanları işaretle
+        var errorFields = document.querySelectorAll('.errorlist');
+        errorFields.forEach(function(errorField) {
+            errorField.classList.add('text-danger', 'small', 'ps-0');
+            errorField.closest('.mb-3').querySelector('input, select, textarea').classList.add('is-invalid');
+        });
+    });
+</script>
+{% endblock %} 

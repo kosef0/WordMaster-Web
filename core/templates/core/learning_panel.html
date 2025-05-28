@@ -1,0 +1,573 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Öğrenme Paneli - Word Master{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --duo-blue: #1cb0f6;
+        --duo-blue-dark: #0091da;
+        --duo-blue-light: #7fd5ff;
+        --duo-orange: #ff9600;
+        --duo-orange-dark: #e08600;
+        --duo-red: #ff4b4b;
+        --duo-purple: #ce82ff;
+        --duo-gray: #afafaf;
+        --duo-gray-light: #e5e5e5;
+        --duo-gray-dark: #777777;
+        --duo-white: #ffffff;
+        --duo-shadow: 0 2px 0;
+        --duo-shadow-hover: 0 4px 0;
+    }
+
+    body {
+        background-color: #fff;
+        font-family: 'Nunito', sans-serif;
+        color: #3c3c3c;
+        line-height: 1.5;
+    }
+    
+    /* Progress bar genişlik sınıfları */
+    .progress-width-0 { width: 0%; }
+    .progress-width-10 { width: 10%; }
+    .progress-width-20 { width: 20%; }
+    .progress-width-30 { width: 30%; }
+    .progress-width-40 { width: 40%; }
+    .progress-width-50 { width: 50%; }
+    .progress-width-60 { width: 60%; }
+    .progress-width-70 { width: 70%; }
+    .progress-width-80 { width: 80%; }
+    .progress-width-90 { width: 90%; }
+    .progress-width-100 { width: 100%; }
+    
+    .learning-panel-header {
+        background: var(--duo-blue);
+        padding: 30px 0 45px;
+        margin-bottom: -30px;
+        position: relative;
+        box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
+    }
+    
+    .learning-panel-header .container {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .learning-panel-header h1 {
+        color: #fff;
+        font-weight: 800;
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+        text-shadow: var(--duo-shadow) rgba(0,0,0,0.2);
+    }
+    
+    .learning-panel-header p {
+        color: rgba(255,255,255,0.9);
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+        font-weight: 600;
+    }
+    
+    .learning-path {
+        position: relative;
+        margin: 0 auto 60px;
+        max-width: 800px;
+        padding: 30px 20px;
+        background-color: #fff;
+        z-index: 10;
+    }
+    
+    .path-title {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .path-title h2 {
+        font-weight: 800;
+        font-size: 1.8rem;
+        margin-bottom: 12px;
+        color: #3c3c3c;
+    }
+    
+    .path-title p {
+        font-size: 1rem;
+        color: #777;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+    
+    .modules-path {
+        position: relative;
+        margin: 15px auto;
+        text-align: center;
+        max-width: 100%;
+    }
+    
+    .modules-path::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background-color: var(--duo-gray-light);
+        transform: translateY(-50%);
+        z-index: 1;
+        border-radius: 3px;
+    }
+    
+    .modules-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .module-wrapper {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .module-card {
+        background-color: #fff;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+        border: 2px solid var(--duo-gray-light);
+    }
+    
+    .module-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .module-icon {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--duo-blue);
+        color: #fff;
+        border-radius: 50%;
+        font-size: 24px;
+    }
+    
+    .module-icon.locked {
+        background: var(--duo-gray);
+    }
+    
+    .module-icon.completed {
+        background: var(--duo-blue-dark);
+    }
+    
+    .module-content {
+        padding-left: 70px;
+        position: relative;
+    }
+    
+    .module-title {
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin-bottom: 5px;
+        color: #3c3c3c;
+        display: flex;
+        align-items: center;
+    }
+    
+    .module-description {
+        color: #777;
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+    }
+    
+    .level-badge {
+        display: inline-block;
+        background: var(--duo-orange);
+        color: white;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 10px;
+        margin-left: 10px;
+    }
+    
+    .module-status {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background: var(--duo-blue);
+        color: white;
+    }
+    
+    .module-status.completed {
+        background: var(--duo-blue-dark);
+    }
+    
+    .module-status.locked {
+        background: var(--duo-gray);
+    }
+    
+    .module-progress {
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background-color: var(--duo-gray-light);
+        margin-bottom: 20px;
+    }
+    
+    .module-progress-bar {
+        height: 100%;
+        background: var(--duo-blue);
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+    
+    .lessons-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .lesson-item {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+        background: var(--duo-blue);
+        text-decoration: none;
+        margin: 0 auto;
+        position: relative;
+        border: 2px solid #fff;
+        box-shadow: var(--duo-shadow) rgba(0,0,0,0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .lesson-item:hover:not(.locked) {
+        transform: translateY(-2px);
+        box-shadow: var(--duo-shadow-hover) rgba(0,0,0,0.2);
+    }
+    
+    .lesson-item.completed {
+        background: var(--duo-blue-dark);
+    }
+    
+    .lesson-item.locked {
+        background: var(--duo-gray);
+        cursor: not-allowed;
+    }
+    
+    .lesson-item.treasure {
+        background: var(--duo-orange);
+    }
+    
+    .lessons-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin: 5px 0 10px;
+        color: var(--duo-gray-dark);
+    }
+    
+    .module-button {
+        background: var(--duo-blue);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: var(--duo-shadow) var(--duo-blue-dark);
+        border: none;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+        transition: filter 0.2s ease, transform 0.2s ease;
+    }
+    
+    .module-button:hover {
+        filter: brightness(1.05);
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .module-button:active {
+        transform: translateY(2px);
+        box-shadow: var(--duo-shadow) var(--duo-blue-dark);
+    }
+    
+    .module-button.completed {
+        background: var(--duo-blue-dark);
+        box-shadow: var(--duo-shadow) var(--duo-blue-dark);
+    }
+    
+    .module-button.locked {
+        background: var(--duo-gray);
+        box-shadow: var(--duo-shadow) var(--duo-gray-dark);
+        cursor: not-allowed;
+    }
+    
+    .locked-module {
+        position: relative;
+    }
+    
+    .locked-overlay {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0,0,0,0.03);
+        border-radius: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+    }
+    
+    .locked-message {
+        background-color: white;
+        color: #3c3c3c;
+        padding: 15px 20px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .locked-message i {
+        color: var(--duo-orange);
+        font-size: 18px;
+    }
+    
+    .connector-line {
+        height: 30px;
+        width: 6px;
+        background-color: var(--duo-gray-light);
+        margin: 0 auto;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 30px;
+        background-color: white;
+        border-radius: 16px;
+        border: 2px solid var(--duo-gray-light);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .empty-state i {
+        font-size: 60px;
+        color: var(--duo-gray);
+        margin-bottom: 20px;
+        display: block;
+    }
+    
+    .empty-state h3 {
+        color: #3c3c3c;
+        margin-bottom: 15px;
+        font-weight: 800;
+        font-size: 1.5rem;
+    }
+    
+    .empty-state p {
+        color: #777;
+        max-width: 500px;
+        margin: 0 auto;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    @media (max-width: 768px) {
+        .learning-panel-header {
+            padding: 25px 0 35px;
+        }
+        
+        .learning-panel-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .learning-panel-header p {
+            font-size: 1rem;
+        }
+        
+        .learning-path {
+            padding: 20px 15px;
+        }
+        
+        .path-title h2 {
+            font-size: 1.5rem;
+        }
+        
+        .module-title {
+            font-size: 1.1rem;
+        }
+        
+        .lessons-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const modules = document.querySelectorAll('.module-wrapper');
+        modules.forEach((module, index) => {
+            setTimeout(() => {
+                module.style.opacity = "1";
+                module.style.transform = "translateY(0)";
+            }, 100 + (index * 150));
+        });
+    });
+</script>
+
+<div class="learning-panel-header">
+    <div class="container text-center">
+        <h1>Öğrenme Paneli</h1>
+        <p>Kategorileri sırayla tamamlayarak İngilizce kelime hazineni geliştir</p>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="learning-path">
+        <div class="path-title">
+            <h2>İngilizce Öğrenme Yolu</h2>
+            <p>Her kategoriyi adım adım tamamlayarak ilerle ve diğer kategorilerin kilidini aç</p>
+        </div>
+        
+        <div class="modules-path">
+            <div class="modules-container">
+                {% for status in category_status %}
+                    <div class="module-wrapper {% if status.is_locked %}locked-module{% endif %}" style="opacity: 0; transform: translateY(20px); transition: all 0.3s ease;">
+                        <div class="module-card">
+                            <div class="module-icon {% if status.is_locked %}locked{% elif status.progress.completed %}completed{% endif %}">
+                                {% if status.is_locked %}
+                                    <i class="fas fa-lock"></i>
+                                {% elif status.progress.completed %}
+                                    <i class="fas fa-check"></i>
+                                {% else %}
+                                    <i class="fas fa-book"></i>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="module-content">
+                                <div class="module-status {% if status.is_locked %}locked{% elif status.progress.completed %}completed{% endif %}">
+                                    {% if status.is_locked %}
+                                        <i class="fas fa-lock"></i> Kilitli
+                                    {% elif status.progress.completed %}
+                                        <i class="fas fa-check"></i> Tamamlandı
+                                    {% else %}
+                                        <i class="fas fa-play"></i> Devam Ediyor
+                                    {% endif %}
+                                </div>
+                                
+                                <h3 class="module-title">
+                                    {{ status.category.name }}
+                                    <span class="level-badge">Seviye {{ status.category.difficulty_level }}</span>
+                                </h3>
+                                
+                                <p class="module-description">{{ status.category.description|default:"Bu kategori için henüz açıklama yok." }}</p>
+                                
+                                {% if not status.is_locked %}
+                                    <div class="module-progress">
+                                        {% with total=status.steps|length %}
+                                            {% with completed=0 %}
+                                                {% for step in status.steps %}
+                                                    {% if step.completed %}
+                                                        {% with completed=completed|add:1 %}{% endwith %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                
+                                                {% widthratio completed total 100 as progress_width %}
+                                                <div class="module-progress-bar progress-width-{{ progress_width }}"></div>
+                                            {% endwith %}
+                                        {% endwith %}
+                                    </div>
+                                    
+                                    <div class="lessons-title">Öğrenme Adımları</div>
+                                    <div class="lessons-grid">
+                                        {% for step in status.steps %}
+                                            <a href="{% url 'learning_step' status.category.id step.id %}" class="lesson-item {% if step.completed %}completed{% elif step.locked %}locked{% endif %} {% if step.type == 'treasure' %}treasure{% endif %}">
+                                                {% if step.completed %}
+                                                    <i class="fas fa-check"></i>
+                                                {% elif step.locked %}
+                                                    <i class="fas fa-lock"></i>
+                                                {% elif step.type == 'treasure' %}
+                                                    <i class="fas fa-trophy"></i>
+                                                {% else %}
+                                                    {{ forloop.counter }}
+                                                {% endif %}
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <a href="{% url 'learning_category' status.category.id %}" class="module-button {% if status.progress.completed %}completed{% endif %}">
+                                        {% if status.progress.completed %}
+                                            <i class="fas fa-sync-alt"></i> Tekrar Et
+                                        {% else %}
+                                            <i class="fas fa-graduation-cap"></i> Öğrenmeye Başla
+                                        {% endif %}
+                                    </a>
+                                {% else %}
+                                    <div class="module-info text-center mt-3">
+                                        <span class="text-muted"><i class="fas fa-info-circle"></i> Bu kategoriyi açmak için önceki kategoriyi tamamla</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if status.is_locked %}
+                                <div class="locked-overlay">
+                                    <div class="locked-message">
+                                        <i class="fas fa-lock"></i> Bu kategoriyi açmak için önceki kategoriyi tamamla
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if not forloop.last %}
+                            <div class="connector-line"></div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <i class="fas fa-book-reader"></i>
+                        <h3>Henüz kategori eklenmemiş</h3>
+                        <p>Lütfen daha sonra tekrar kontrol edin veya yöneticinizle iletişime geçin.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

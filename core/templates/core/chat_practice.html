@@ -1,0 +1,550 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Yapay Zeka İngilizce Pratik - Word Master{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ChatPractice ekranı için özel stiller */
+    .chat-container {
+        background-color: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        height: 70vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .chat-header {
+        padding: 15px 20px;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+    }
+    
+    .chat-progress {
+        display: flex;
+        padding: 10px 20px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .progress-item {
+        flex: 1;
+        text-align: center;
+        padding: 5px;
+    }
+    
+    .progress-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin-bottom: 2px;
+    }
+    
+    .progress-value {
+        font-weight: bold;
+        color: var(--primary);
+    }
+    
+    .chat-messages {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+    }
+    
+    .message {
+        margin-bottom: 15px;
+        max-width: 80%;
+        position: relative;
+    }
+    
+    .message-user {
+        margin-left: auto;
+        background-color: var(--primary);
+        color: white;
+        border-radius: 18px 18px 4px 18px;
+        padding: 10px 15px;
+    }
+    
+    .message-ai {
+        margin-right: auto;
+        background-color: #e9ecef;
+        color: #212529;
+        border-radius: 18px 18px 18px 4px;
+        padding: 10px 15px;
+    }
+    
+    .message-time {
+        font-size: 11px;
+        color: #adb5bd;
+        margin-top: 5px;
+        text-align: right;
+    }
+    
+    .chat-input {
+        padding: 15px;
+        background-color: #fff;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        align-items: center;
+    }
+    
+    .chat-input input {
+        flex-grow: 1;
+        border: 1px solid #ced4da;
+        border-radius: 24px;
+        padding: 10px 15px;
+        margin-right: 10px;
+    }
+    
+    .chat-input button {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-speak {
+        background-color: transparent;
+        border: none;
+        color: var(--primary);
+        cursor: pointer;
+        padding: 5px;
+        margin-right: 5px;
+    }
+    
+    .btn-speak:hover {
+        color: var(--primary-dark);
+    }
+    
+    .btn-speak.speaking {
+        color: #e74c3c;
+        animation: pulse 1s infinite;
+    }
+    
+    .settings-modal .modal-content {
+        border-radius: 16px;
+    }
+    
+    .settings-modal .modal-header {
+        background-color: var(--primary);
+        color: white;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+    }
+    
+    .settings-modal .btn-group {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .settings-modal .btn-group .btn {
+        flex: 1;
+    }
+    
+    .hint-button {
+        background-color: rgba(28, 176, 246, 0.1);
+        border: none;
+        color: var(--primary);
+        padding: 5px 10px;
+        border-radius: 16px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .hint-button i {
+        margin-right: 5px;
+    }
+    
+    .loading-indicator {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: rgba(0, 0, 0, 0.05);
+        border-radius: 16px;
+        margin-bottom: 15px;
+        align-self: flex-start;
+    }
+    
+    .loading-indicator span {
+        margin-left: 10px;
+        font-size: 14px;
+        color: #6c757d;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <h1 class="h3 mb-3 text-center">Yapay Zeka İngilizce Pratik</h1>
+            <p class="text-muted text-center mb-4">Yapay zeka asistanı ile İngilizce konuşma ve kelime pratiği yapın</p>
+            
+            <!-- Chat Container -->
+            <div class="chat-container">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div>
+                        <h5 class="mb-0">İngilizce Pratik</h5>
+                        <small>{{ practice_mode_display }} - {{ english_level }}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-light" id="settingsButton" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="chat-progress">
+                    <div class="progress-item">
+                        <div class="progress-label">Doğru</div>
+                        <div class="progress-value" id="correctAnswers">{{ progress.correct_answers }}</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label">Toplam</div>
+                        <div class="progress-value" id="totalAttempts">{{ progress.total_attempts }}</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label">Seri</div>
+                        <div class="progress-value" id="streak">{{ progress.streak }} gün</div>
+                    </div>
+                    <div class="progress-item">
+                        <button class="hint-button" id="hintButton">
+                            <i class="fas fa-lightbulb"></i> İpucu
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Chat Messages -->
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be added here dynamically -->
+                </div>
+                
+                <!-- Chat Input -->
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Mesajınızı yazın..." class="form-control">
+                    <button class="btn btn-primary" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal fade settings-modal" id="settingsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pratik Ayarları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="settingsForm">
+                    <div class="mb-3">
+                        <label class="form-label">Mod:</label>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="practice_mode" id="modeConversation" value="konuşma" {% if practice_mode == 'konuşma' %}checked{% endif %}>
+                            <label class="btn btn-outline-primary" for="modeConversation">Konuşma</label>
+                            
+                            <input type="radio" class="btn-check" name="practice_mode" id="modeVocabulary" value="kelime" {% if practice_mode == 'kelime' %}checked{% endif %}>
+                            <label class="btn btn-outline-primary" for="modeVocabulary">Kelime</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Seviye:</label>
+                        <div class="btn-group" role="group">
+                            {% for level_code, level_name in english_levels %}
+                                <input type="radio" class="btn-check" name="english_level" id="level{{ level_code }}" value="{{ level_code }}" {% if english_level == level_code %}checked{% endif %}>
+                                <label class="btn btn-outline-primary" for="level{{ level_code }}">{{ level_code }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="saveSettingsButton">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hint Modal -->
+<div class="modal fade" id="hintModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">İpucu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="hintText"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const hintButton = document.getElementById('hintButton');
+        const saveSettingsButton = document.getElementById('saveSettingsButton');
+        
+        let isLoading = false;
+        let isSpeaking = false;
+        let currentSpeakingId = null;
+        
+        // İlk mesajı yükle
+        loadInitialMessage();
+        
+        // Mesaj gönderme
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // İpucu butonu
+        hintButton.addEventListener('click', requestHint);
+        
+        // Ayarları kaydet
+        saveSettingsButton.addEventListener('click', saveSettings);
+        
+        // Fonksiyonlar
+        function loadInitialMessage() {
+            fetch('{% url "chat_practice_api" %}?action=initial_message')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.message) {
+                        addMessage(data.message, 'ai');
+                    }
+                })
+                .catch(error => console.error('Error loading initial message:', error));
+        }
+        
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || isLoading) return;
+            
+            // Kullanıcı mesajını ekle
+            addMessage(message, 'user');
+            messageInput.value = '';
+            
+            // Yükleniyor göstergesi ekle
+            isLoading = true;
+            const loadingElement = document.createElement('div');
+            loadingElement.className = 'loading-indicator';
+            loadingElement.innerHTML = `
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+                <span>Düşünüyor...</span>
+            `;
+            chatMessages.appendChild(loadingElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // API'ye istek gönder
+            fetch('{% url "chat_practice_send_message" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Yükleniyor göstergesini kaldır
+                chatMessages.removeChild(loadingElement);
+                isLoading = false;
+                
+                if (data.success) {
+                    // AI yanıtını ekle
+                    addMessage(data.response, 'ai');
+                    
+                    // İlerleme bilgilerini güncelle
+                    if (data.progress) {
+                        document.getElementById('correctAnswers').textContent = data.progress.correct_answers;
+                        document.getElementById('totalAttempts').textContent = data.progress.total_attempts;
+                        document.getElementById('streak').textContent = data.progress.streak + ' gün';
+                    }
+                } else {
+                    console.error('Error:', data.error);
+                    alert('Bir hata oluştu: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                chatMessages.removeChild(loadingElement);
+                isLoading = false;
+                alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+            });
+        }
+        
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message message-${sender}`;
+            
+            const messageId = Date.now().toString();
+            messageElement.id = `message-${messageId}`;
+            
+            // Mesaj içeriği
+            messageElement.innerHTML = `
+                ${text}
+                <div class="message-time">${formatTime(new Date())}</div>
+            `;
+            
+            // Eğer AI mesajı ise, konuşma butonu ekle
+            if (sender === 'ai') {
+                const speakButton = document.createElement('button');
+                speakButton.className = 'btn-speak';
+                speakButton.innerHTML = '<i class="fas fa-volume-up"></i>';
+                speakButton.addEventListener('click', () => handleSpeak(text, messageId));
+                messageElement.appendChild(speakButton);
+            }
+            
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function handleSpeak(text, messageId) {
+            const speakButton = document.querySelector(`#message-${messageId} .btn-speak`);
+            
+            if (isSpeaking && currentSpeakingId === messageId) {
+                // Konuşmayı durdur
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                currentSpeakingId = null;
+                speakButton.classList.remove('speaking');
+                return;
+            }
+            
+            // Eğer başka bir konuşma varsa durdur
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                document.querySelector(`#message-${currentSpeakingId} .btn-speak`).classList.remove('speaking');
+            }
+            
+            // Yeni konuşma başlat
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            
+            utterance.onstart = () => {
+                isSpeaking = true;
+                currentSpeakingId = messageId;
+                speakButton.classList.add('speaking');
+            };
+            
+            utterance.onend = () => {
+                isSpeaking = false;
+                currentSpeakingId = null;
+                speakButton.classList.remove('speaking');
+            };
+            
+            utterance.onerror = (event) => {
+                console.error('Speech synthesis error:', event);
+                isSpeaking = false;
+                currentSpeakingId = null;
+                speakButton.classList.remove('speaking');
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        function requestHint() {
+            fetch('{% url "chat_practice_api" %}?action=hint')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.hint) {
+                        document.getElementById('hintText').textContent = data.hint;
+                        const hintModal = new bootstrap.Modal(document.getElementById('hintModal'));
+                        hintModal.show();
+                    } else {
+                        alert('İpucu alınamadı: ' + (data.error || 'Bilinmeyen hata'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error requesting hint:', error);
+                    alert('İpucu alınamadı. Lütfen tekrar deneyin.');
+                });
+        }
+        
+        function saveSettings() {
+            const form = document.getElementById('settingsForm');
+            const formData = new FormData(form);
+            
+            fetch('{% url "chat_practice_settings" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Modal'ı kapat
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('settingsModal'));
+                    modal.hide();
+                    
+                    // Sayfayı yenile
+                    window.location.reload();
+                } else {
+                    alert('Ayarlar kaydedilemedi: ' + (data.error || 'Bilinmeyen hata'));
+                }
+            })
+            .catch(error => {
+                console.error('Error saving settings:', error);
+                alert('Ayarlar kaydedilemedi. Lütfen tekrar deneyin.');
+            });
+        }
+        
+        // Yardımcı fonksiyonlar
+        function formatTime(date) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %} 

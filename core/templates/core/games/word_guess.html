@@ -1,0 +1,355 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Kelime Tahmin Oyunu - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-3">Kelime Tahmin Oyunu</h1>
+            <p class="lead">Harfleri tahmin ederek gizli kelimeyi bulun. 5 yanlış hakkınız var!</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'game_menu' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Oyun Menüsüne Dön
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div id="hangman-game">
+                        <!-- Oyun alanı -->
+                        <div class="text-center mb-4">
+                            <div class="hangman-drawing mb-4">
+                                <canvas id="hangmanCanvas" width="300" height="300"></canvas>
+                            </div>
+                            
+                            <div class="word-display mb-4">
+                                <h2 id="wordDisplay" class="display-4 letter-spacing">_ _ _ _ _</h2>
+                            </div>
+                            
+                            <p id="hint" class="text-muted mb-1">İpucu: <span id="wordHint">------</span></p>
+                            <p id="translation" class="mb-3">Çevirisi: <span id="wordTranslation">------</span></p>
+                            
+                            <div id="game-status" class="alert d-none mb-3"></div>
+                            
+                            <div class="incorrect-guesses mb-2">
+                                <span>Kalan hak: <span id="remainingGuesses">5</span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="keyboard mb-4">
+                            <div class="row g-2 mb-2 justify-content-center">
+                                <div class="col-auto" id="letterButtons">
+                                    {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" %}
+                                    <button class="btn btn-outline-primary m-1 letter-btn" data-letter="{{ letter }}">{{ letter }}</button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="actions text-center">
+                            <button id="newGameBtn" class="btn btn-primary">
+                                <i class="fas fa-sync-alt me-2"></i> Yeni Kelime
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .letter-spacing {
+        letter-spacing: 10px;
+    }
+    
+    .letter-btn {
+        min-width: 40px;
+        font-weight: bold;
+    }
+    
+    .letter-btn.disabled {
+        opacity: 0.5;
+    }
+    
+    .hangman-drawing {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Oyun değişkenleri
+        const words = [
+            {% for word in game_words %}
+            {
+                word: "{{ word.english|upper }}",
+                hint: "{{ word.definition|default:'Tanım yok'|escapejs }}",
+                translation: "{{ word.turkish|escapejs }}",
+                category: "{{ word.category.name|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% empty %}
+            {word: "APPLE", hint: "A fruit", translation: "Elma", category: "Yiyecekler"},
+            {word: "HOUSE", hint: "A place to live", translation: "Ev", category: "Mekanlar"},
+            {word: "COMPUTER", hint: "Electronic device", translation: "Bilgisayar", category: "Teknoloji"},
+            {word: "BOOK", hint: "Reading material", translation: "Kitap", category: "Nesneler"},
+            {word: "CAT", hint: "A pet animal", translation: "Kedi", category: "Hayvanlar"}
+            {% endfor %}
+        ];
+        
+        let currentWord = "";
+        let currentHint = "";
+        let currentTranslation = "";
+        let currentCategory = "";
+        let guessedLetters = [];
+        let wrongGuesses = 0;
+        let maxWrongGuesses = 5;
+        let gameOver = false;
+        
+        // DOM elementleri
+        const wordDisplay = document.getElementById('wordDisplay');
+        const wordHint = document.getElementById('wordHint');
+        const wordTranslation = document.getElementById('wordTranslation');
+        const remainingGuesses = document.getElementById('remainingGuesses');
+        const letterButtons = document.querySelectorAll('.letter-btn');
+        const newGameBtn = document.getElementById('newGameBtn');
+        const gameStatus = document.getElementById('game-status');
+        const canvas = document.getElementById('hangmanCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Adam asmaca çizimi için fonksiyonlar
+        function drawGallows() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#333';
+            
+            // Temel
+            ctx.beginPath();
+            ctx.moveTo(50, 270);
+            ctx.lineTo(250, 270);
+            ctx.stroke();
+            
+            // Direk
+            ctx.beginPath();
+            ctx.moveTo(100, 270);
+            ctx.lineTo(100, 50);
+            ctx.stroke();
+            
+            // Üst çizgi
+            ctx.beginPath();
+            ctx.moveTo(100, 50);
+            ctx.lineTo(200, 50);
+            ctx.stroke();
+            
+            // İp
+            ctx.beginPath();
+            ctx.moveTo(200, 50);
+            ctx.lineTo(200, 100);
+            ctx.stroke();
+        }
+        
+        function drawHead() {
+            ctx.beginPath();
+            ctx.arc(200, 120, 20, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        function drawBody() {
+            ctx.beginPath();
+            ctx.moveTo(200, 140);
+            ctx.lineTo(200, 200);
+            ctx.stroke();
+        }
+        
+        function drawLeftArm() {
+            ctx.beginPath();
+            ctx.moveTo(200, 150);
+            ctx.lineTo(170, 180);
+            ctx.stroke();
+        }
+        
+        function drawRightArm() {
+            ctx.beginPath();
+            ctx.moveTo(200, 150);
+            ctx.lineTo(230, 180);
+            ctx.stroke();
+        }
+        
+        function drawLeftLeg() {
+            ctx.beginPath();
+            ctx.moveTo(200, 200);
+            ctx.lineTo(170, 230);
+            ctx.stroke();
+        }
+        
+        function drawRightLeg() {
+            ctx.beginPath();
+            ctx.moveTo(200, 200);
+            ctx.lineTo(230, 230);
+            ctx.stroke();
+        }
+        
+        // Yanlış tahminde çizim yap
+        function drawHangman(wrongGuesses) {
+            drawGallows();
+            
+            if (wrongGuesses >= 1) drawHead();
+            if (wrongGuesses >= 2) drawBody();
+            if (wrongGuesses >= 3) drawLeftArm();
+            if (wrongGuesses >= 4) drawRightArm();
+            if (wrongGuesses >= 5) drawLeftLeg();
+            if (wrongGuesses >= 6) drawRightLeg();
+        }
+        
+        // Kelimeyi göster (tahmin edilen harflerle)
+        function updateWordDisplay() {
+            let display = '';
+            for (let i = 0; i < currentWord.length; i++) {
+                if (guessedLetters.includes(currentWord[i])) {
+                    display += currentWord[i] + ' ';
+                } else {
+                    display += '_ ';
+                }
+            }
+            wordDisplay.textContent = display.trim();
+        }
+        
+        // Oyun durumunu kontrol et
+        function checkGameStatus() {
+            // Tüm harfler tahmin edildi mi?
+            let wordComplete = true;
+            for (let i = 0; i < currentWord.length; i++) {
+                if (!guessedLetters.includes(currentWord[i])) {
+                    wordComplete = false;
+                    break;
+                }
+            }
+            
+            if (wordComplete) {
+                // Oyun kazanıldı
+                gameOver = true;
+                gameStatus.textContent = 'Tebrikler! Kelimeyi buldunuz: ' + currentWord;
+                gameStatus.className = 'alert alert-success';
+                gameStatus.classList.remove('d-none');
+                
+                // İpucu ve çeviriyi göster
+                wordHint.textContent = currentHint;
+                wordTranslation.textContent = currentTranslation;
+                
+                // Tüm butonları devre dışı bırak
+                letterButtons.forEach(btn => {
+                    btn.disabled = true;
+                });
+            } else if (wrongGuesses >= maxWrongGuesses) {
+                // Oyun kaybedildi
+                gameOver = true;
+                gameStatus.textContent = 'Üzgünüm, kelimeyi bulamadınız. Doğru cevap: ' + currentWord;
+                gameStatus.className = 'alert alert-danger';
+                gameStatus.classList.remove('d-none');
+                
+                // İpucu ve çeviriyi göster
+                wordHint.textContent = currentHint;
+                wordTranslation.textContent = currentTranslation;
+                
+                // Tüm butonları devre dışı bırak
+                letterButtons.forEach(btn => {
+                    btn.disabled = true;
+                });
+                
+                // Tam adamı çiz
+                drawHangman(6);
+            } else {
+                // Oyun devam ediyor
+                remainingGuesses.textContent = maxWrongGuesses - wrongGuesses;
+            }
+        }
+        
+        // Harf tahmini yap
+        function guessLetter(letter) {
+            if (gameOver) return;
+            
+            if (!guessedLetters.includes(letter)) {
+                guessedLetters.push(letter);
+                
+                if (!currentWord.includes(letter)) {
+                    wrongGuesses++;
+                    drawHangman(wrongGuesses);
+                }
+                
+                updateWordDisplay();
+                checkGameStatus();
+                
+                // Butonu devre dışı bırak
+                document.querySelector(`[data-letter="${letter}"]`).disabled = true;
+                document.querySelector(`[data-letter="${letter}"]`).classList.add('disabled');
+            }
+        }
+        
+        // Yeni oyun başlat
+        function startNewGame() {
+            // Rastgele bir kelime seç
+            const randomIndex = Math.floor(Math.random() * words.length);
+            const wordObj = words[randomIndex];
+            
+            currentWord = wordObj.word;
+            currentHint = wordObj.hint;
+            currentTranslation = wordObj.translation;
+            currentCategory = wordObj.category;
+            
+            guessedLetters = [];
+            wrongGuesses = 0;
+            gameOver = false;
+            
+            // Görsel öğeleri sıfırla
+            wordDisplay.textContent = '_ '.repeat(currentWord.length).trim();
+            wordHint.textContent = "Kategori: " + currentCategory;
+            wordTranslation.textContent = '------';
+            remainingGuesses.textContent = maxWrongGuesses;
+            
+            gameStatus.classList.add('d-none');
+            
+            // Butonları sıfırla
+            letterButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('disabled');
+            });
+            
+            // Adam asmaca çizimini sıfırla
+            drawGallows();
+        }
+        
+        // Buton olayları
+        letterButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                guessLetter(this.getAttribute('data-letter'));
+            });
+        });
+        
+        newGameBtn.addEventListener('click', startNewGame);
+        
+        // Klavye tuşlarıyla oynamak için
+        document.addEventListener('keydown', function(e) {
+            if (!gameOver) {
+                const key = e.key.toUpperCase();
+                if (key.length === 1 && /[A-Z]/.test(key)) {
+                    guessLetter(key);
+                }
+            }
+        });
+        
+        // İlk oyunu başlat
+        startNewGame();
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,210 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root {
+        --primary: #1cb0f6;
+        --primary-dark: #1184c1;
+        --secondary: #4cc9f0;
+        --secondary-dark: #3a8eba;
+        --success: #28a745;
+        --info: #17a2b8;
+        --warning: #ff9600;
+        --danger: #e74c3c;
+    }
+    
+    .dashboard-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        flex: 1;
+        min-width: 200px;
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card .icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        display: block;
+    }
+    
+    .stat-card .number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stat-card .label {
+        color: #666;
+        font-size: 1rem;
+    }
+    
+    .stat-card.users .icon { color: var(--primary); }
+    .stat-card.words .icon { color: var(--success); }
+    .stat-card.categories .icon { color: var(--warning); }
+    .stat-card.quizzes .icon { color: var(--danger); }
+    
+    .chart-container {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>{% trans 'İstatistikler' %}</h1>
+    
+    <div class="dashboard-stats">
+        <div class="stat-card users">
+            <i class="fas fa-users icon"></i>
+            <div class="number">{{ total_users }}</div>
+            <div class="label">{% trans 'Toplam Kullanıcı' %}</div>
+        </div>
+        
+        <div class="stat-card words">
+            <i class="fas fa-language icon"></i>
+            <div class="number">{{ total_words }}</div>
+            <div class="label">{% trans 'Toplam Kelime' %}</div>
+        </div>
+        
+        <div class="stat-card categories">
+            <i class="fas fa-folder icon"></i>
+            <div class="number">{{ total_categories }}</div>
+            <div class="label">{% trans 'Toplam Kategori' %}</div>
+        </div>
+        
+        <div class="stat-card quizzes">
+            <i class="fas fa-question-circle icon"></i>
+            <div class="number">{{ total_quizzes }}</div>
+            <div class="label">{% trans 'Toplam Quiz' %}</div>
+        </div>
+    </div>
+    
+    <div class="chart-container">
+        <h2>{% trans 'Kullanıcı Aktivitesi' %}</h2>
+        <p>{% trans 'Son 7 günlük kullanıcı aktivitesi' %}</p>
+        <div id="user-activity-chart" style="height: 300px;"></div>
+    </div>
+    
+    <div class="chart-container">
+        <h2>{% trans 'Kategori Dağılımı' %}</h2>
+        <p>{% trans 'Kategorilere göre kelime dağılımı (İlk 10 kategori)' %}</p>
+        <div id="category-distribution-chart" style="height: 300px;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Kullanıcı aktivitesi grafiği
+        const userActivityCtx = document.getElementById('user-activity-chart').getContext('2d');
+        
+        const userActivityLabels = [
+            {% for activity in user_activity %}
+                '{{ activity.last_reviewed__date|date:"d.m.Y" }}'{% if not forloop.last %},{% endif %}
+            {% empty %}
+                'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'
+            {% endfor %}
+        ];
+        
+        const userActivityValues = [
+            {% for activity in user_activity %}
+                {{ activity.count }}{% if not forloop.last %},{% endif %}
+            {% empty %}
+                65, 59, 80, 81, 56, 55, 40
+            {% endfor %}
+        ];
+        
+        new Chart(userActivityCtx, {
+            type: 'line',
+            data: {
+                labels: userActivityLabels,
+                datasets: [{
+                    label: 'Aktif Kullanıcılar',
+                    data: userActivityValues,
+                    fill: false,
+                    borderColor: '#1cb0f6',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        
+        // Kategori dağılımı grafiği
+        const categoryDistributionCtx = document.getElementById('category-distribution-chart').getContext('2d');
+        
+        const categoryLabels = [
+            {% for category in categories_with_word_count %}
+                '{{ category.name }}'{% if not forloop.last %},{% endif %}
+            {% empty %}
+                'Temel Kelimeler', 'Seyahat', 'İş İngilizcesi', 'Günlük Konuşma', 'Akademik'
+            {% endfor %}
+        ];
+        
+        const categoryValues = [
+            {% for category in categories_with_word_count %}
+                {{ category.word_count }}{% if not forloop.last %},{% endif %}
+            {% empty %}
+                120, 190, 30, 50, 20
+            {% endfor %}
+        ];
+        
+        new Chart(categoryDistributionCtx, {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Kelime Sayısı',
+                    data: categoryValues,
+                    backgroundColor: [
+                        '#1cb0f6',
+                        '#28a745',
+                        '#ff9600',
+                        '#e74c3c',
+                        '#9b59b6',
+                        '#3498db',
+                        '#f1c40f',
+                        '#1abc9c',
+                        '#d35400',
+                        '#8e44ad'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    });
+</script>
+{% endblock %} 

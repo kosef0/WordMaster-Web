@@ -1,0 +1,117 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Quiz Sonuçları - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="mb-3">Quiz Sonuçları</h1>
+            <p class="lead">Skorunuz: {{ quiz.score }} / {{ quiz.max_score }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-home me-2"></i> Ana Sayfaya Dön
+            </a>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Quiz Özeti</h5>
+        </div>
+        <div class="card-body">
+            <div class="result-summary">
+                <div class="row text-center mb-4">
+                    <div class="col-md-4">
+                        <div class="display-4 text-primary">{{ quiz.score }}</div>
+                        <div class="text-muted">Doğru Yanıt</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="display-4 text-danger">{{ wrong_count }}</div>
+                        <div class="text-muted">Yanlış Yanıt</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="display-4 text-success">{{ success_percentage|floatformat:0 }}%</div>
+                        <div class="text-muted">Başarı Yüzdesi</div>
+                    </div>
+                </div>
+                
+                {% if success_percentage >= 80 %}
+                <div class="alert alert-success text-center">
+                    <h4 class="alert-heading"><i class="fas fa-trophy me-2"></i> Tebrikler!</h4>
+                    <p>Quiz'i başarıyla tamamladınız. Çok iyi bir performans gösterdiniz.</p>
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center">
+                    <h4 class="alert-heading"><i class="fas fa-info-circle me-2"></i> Daha İyi Olabilir</h4>
+                    <p>Bu quiz için daha fazla çalışman gerekiyor. Hadi kelimeleri tekrar edelim!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <h3 class="mt-5 mb-4">Sorular ve Cevaplar</h3>
+    
+    {% for question in questions %}
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Soru {{ forloop.counter }}</h5>
+            {% if question.is_correct %}
+            <span class="badge bg-success">Doğru</span>
+            {% else %}
+            <span class="badge bg-danger">Yanlış</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            <p class="lead">{{ question.word.english }}</p>
+            
+            <div class="mb-3">
+                <strong>Doğru Cevap:</strong> {{ question.word.turkish }}
+            </div>
+            
+            {% if question.user_answer %}
+            <div class="{% if question.is_correct %}text-success{% else %}text-danger{% endif %}">
+                <strong>Senin Cevabın:</strong> 
+                {% if question.user_answer|stringformat:"s" == question.word.id|stringformat:"s" %}
+                    {{ question.word.turkish }}
+                {% else %}
+                    {% for option in question.options %}
+                        {% if option.id|stringformat:"s" == question.user_answer %}
+                            {{ option.turkish }}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="text-muted">
+                <em>Cevap verilmedi</em>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    
+    <div class="text-center mt-5">
+        {% if quiz.category %}
+        <a href="{% url 'category_detail' quiz.category.id %}" class="btn btn-primary me-2">
+            <i class="fas fa-book me-2"></i> Kategoriyi İncele
+        </a>
+        {% endif %}
+        
+        <a href="{% url 'quiz_start' %}" class="btn btn-success">
+            <i class="fas fa-redo me-2"></i> Yeni Quiz Başlat
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // İsterseniz buraya extra JS kodları ekleyebilirsiniz
+});
+</script>
+{% endblock %} 

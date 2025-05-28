@@ -1,0 +1,292 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Word Master - Özellikler{% endblock %}
+
+{% block extra_css %}
+<style>
+    .features-header {
+        background-color: #f8f9fa;
+        padding: 80px 0 40px;
+        text-align: center;
+    }
+    
+    .features-title {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #1cb0f6;
+        margin-bottom: 20px;
+    }
+    
+    .features-subtitle {
+        font-size: 1.4rem;
+        color: #555;
+        max-width: 700px;
+        margin: 0 auto 40px;
+    }
+    
+    .feature-section {
+        padding: 80px 0;
+    }
+    
+    .feature-section:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    .feature-card {
+        border-radius: 20px;
+        padding: 40px;
+        transition: all 0.3s;
+        margin-bottom: 30px;
+        background-color: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        height: 100%;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: rgba(28, 176, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        color: #1cb0f6;
+        font-size: 2.5rem;
+    }
+    
+    .feature-heading {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .feature-text {
+        color: #666;
+        font-size: 1.1rem;
+        line-height: 1.7;
+        text-align: center;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1cb0f6;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .section-subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        max-width: 700px;
+        margin: 0 auto 60px;
+        text-align: center;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 40px;
+    }
+    
+    .feature-item-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(28, 176, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
+        color: #1cb0f6;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .feature-item-content h3 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .feature-item-content p {
+        color: #666;
+        margin-bottom: 0;
+    }
+    
+    .cta-section {
+        background-color: #1cb0f6;
+        padding: 80px 0;
+        text-align: center;
+        color: white;
+    }
+    
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+    }
+    
+    .cta-subtitle {
+        font-size: 1.2rem;
+        max-width: 700px;
+        margin: 0 auto 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="features-header">
+    <div class="container">
+        <h1 class="features-title">Hedeflerini belirleyerek başla</h1>
+        <p class="features-subtitle">Hedeflerine ulaşman için sana dersler, kategoriler ve aktiviteler önereceğiz.</p>
+    </div>
+</div>
+
+<!-- Ana Özellikler -->
+<div class="feature-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <h3 class="feature-heading">Kişisel hedeflerine odaklan</h3>
+                    <p class="feature-text">İş hayatı, seyahat, günlük konuşma veya sınavlar için kelimeleri öğrenmeye odaklan.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-heading">Öğrenme deneyimini kişiselleştir</h3>
+                    <p class="feature-text">Öğrenme hızını, kategorileri ve zorluk seviyesini sen belirle.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="feature-heading">Oyunlarla Öğren</h3>
+                    <p class="feature-text">Kelime avı, yapboz ve hızlı quiz oyunlarıyla eğlenerek kelime öğren.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Öğrenme Sistemi -->
+<div class="feature-section">
+    <div class="container">
+        <h2 class="section-title">Etkili Öğrenme Metodları</h2>
+        <p class="section-subtitle">Word Master'ın bilimsel temellere dayalı öğrenme sistemi ile kelimeleri daha hızlı ve kalıcı şekilde öğrenin.</p>
+        
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="feature-item">
+                    <div class="feature-item-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <div class="feature-item-content">
+                        <h3>Aralıklı Tekrar</h3>
+                        <p>Bilimsel araştırmalara dayalı aralıklı tekrar sistemi ile öğrendiğiniz kelimeler uzun süreli hafızanızda kalır.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-item-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="feature-item-content">
+                        <h3>Çoklu Öğrenme Yöntemleri</h3>
+                        <p>Eşleştirme, yazma, çoktan seçmeli ve dinleme egzersizleri ile kelimeleri farklı açılardan pekiştirin.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-item-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="feature-item-content">
+                        <h3>İlerleme Takibi</h3>
+                        <p>Detaylı istatistikler ve ilerleme grafikleri ile gelişiminizi somut olarak görün.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <img src="https://img.freepik.com/free-vector/language-learning-concept_23-2148590392.jpg" alt="Öğrenme Metodları" class="img-fluid rounded-3 shadow">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Özellikler -->
+<div class="feature-section">
+    <div class="container">
+        <h2 class="section-title">Eğlenerek İngilizce kelimeleri öğren</h2>
+        <p class="section-subtitle">Word Master ile İngilizce kelime hazineni geliştirmek için etkili, eğlenceli ve kişiselleştirilmiş bir yolculuğa çık.</p>
+        
+        <div class="row align-items-center">
+            <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
+                <div class="feature-item">
+                    <div class="feature-item-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="feature-item-content">
+                        <h3>Kişiselleştirilmiş Öğrenme Deneyimi</h3>
+                        <p>Seviyeniz ve hedeflerinize göre özel öğrenme yolları ve içeriklerle daha etkili öğrenin.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-item-icon">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <div class="feature-item-content">
+                        <h3>Başarı Rozetleri ve Ödüller</h3>
+                        <p>Motivasyonunuzu yüksek tutmak için kazanacağınız rozetler ve ödüllerle başarınızı kutlayın.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-item-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="feature-item-content">
+                        <h3>Günlük Streak Sistemi</h3>
+                        <p>Düzenli çalışma alışkanlığı kazanmak için günlük streak sistemi ile motivasyonunuzu koruyun.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 order-lg-1">
+                <img src="https://img.freepik.com/free-vector/english-teacher-concept-illustration_114360-7477.jpg" alt="Öğrenme Özellikleri" class="img-fluid rounded-3 shadow">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="cta-section">
+    <div class="container">
+        <h2 class="cta-title">Hemen başla ve ilk dersini tamamla!</h2>
+        <p class="cta-subtitle">Sadece 5 dakika sürecek!</p>
+        <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5 py-3">Ücretsiz Kaydol</a>
+    </div>
+</div>
+{% endblock %} 

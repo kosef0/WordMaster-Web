@@ -1,0 +1,567 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Kelime Avı - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-3">Kelime Avı</h1>
+            <p class="lead">Doğru kelimeleri hızlıca seçerek puanınızı artırın! Yanlış seçimler puanınızı düşürür.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'game_menu' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i> Oyun Menüsüne Dön
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div id="word-hunt-game">
+                        <!-- Oyun bilgileri -->
+                        <div class="game-info row mb-4 text-center">
+                            <div class="col-3">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body py-2">
+                                        <h5 class="mb-1">Puan</h5>
+                                        <h3 id="score" class="mb-0">0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body py-2">
+                                        <h5 class="mb-1">En Yüksek</h5>
+                                        <h3 id="best-score" class="mb-0">{{ best_score }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body py-2">
+                                        <h5 class="mb-1">Süre</h5>
+                                        <h3 id="timer" class="mb-0">60</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="card bg-light border-0">
+                                    <div class="card-body py-2">
+                                        <h5 class="mb-1">Hedef</h5>
+                                        <h3 id="target" class="mb-0">-</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Oyun alanı -->
+                        <div id="game-area" class="mb-4 p-3 rounded bg-light">
+                            <div class="row g-3 word-container">
+                                <!-- Kelimeler JavaScript ile buraya eklenecek -->
+                            </div>
+                        </div>
+                        
+                        <!-- Oyun durumu -->
+                        <div id="game-status" class="alert d-none mb-4"></div>
+                        
+                        <!-- Kontroller -->
+                        <div class="text-center">
+                            <button id="startBtn" class="btn btn-danger btn-lg">
+                                <i class="fas fa-play me-2"></i> Oyunu Başlat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .word-container {
+        min-height: 300px;
+        position: relative;
+    }
+    
+    .word-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        transform-origin: center;
+        animation: popIn 0.5s;
+    }
+    
+    .word-card:hover {
+        transform: scale(1.05);
+    }
+    
+    .word-card.correct {
+        background-color: #d4edda !important;
+        border-color: #c3e6cb !important;
+    }
+    
+    .word-card.wrong {
+        background-color: #f8d7da !important;
+        border-color: #f5c6cb !important;
+    }
+    
+    @keyframes popIn {
+        0% { transform: scale(0); opacity: 0; }
+        70% { transform: scale(1.1); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    /* Hedef kelimenin daha belirgin görünmesi için ek stil */
+    #target {
+        font-weight: bold;
+        color: #1cb0f6;
+    }
+    
+    /* Oyun alanını daha belirgin yapmak için */
+    #game-area {
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        min-height: 300px;
+    }
+    
+    /* Tıklanabilir kartları belirtmek için */
+    .word-card {
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        border: 2px solid transparent;
+    }
+    
+    /* Hedef kelime vurgusu */
+    .highlight {
+        animation: pulse 1s;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Django verilerini JSON olarak hazırlıyoruz -->
+<script id="game-data" type="application/json">
+    {
+        "words": [
+            {% for word in words %}
+            {
+                "english": "{{ word.english|escapejs }}",
+                "turkish": "{{ word.turkish|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% empty %}
+            {"english": "apple", "turkish": "elma"},
+            {"english": "house", "turkish": "ev"},
+            {"english": "book", "turkish": "kitap"},
+            {"english": "water", "turkish": "su"},
+            {"english": "friend", "turkish": "arkadaş"}
+            {% endfor %}
+        ]
+    }
+</script>
+
+<!-- Oyun mantığını içeren JavaScript kodu -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // JSON verilerini elementten alarak parse et
+        const gameDataElement = document.getElementById('game-data');
+        const gameData = JSON.parse(gameDataElement.textContent);
+        
+        // Oyunu başlat
+        initGame(gameData.words);
+    });
+    
+    function initGame(words) {
+        // Kelime listesinin en az 10 öğe içerdiğinden emin olalım
+        if (words.length < 10) {
+            // Yeterli kelime yoksa varsayılan kelimeler ekle
+            const defaultWords = [
+                {"english": "apple", "turkish": "elma"},
+                {"english": "house", "turkish": "ev"},
+                {"english": "book", "turkish": "kitap"},
+                {"english": "water", "turkish": "su"},
+                {"english": "friend", "turkish": "arkadaş"},
+                {"english": "car", "turkish": "araba"},
+                {"english": "sun", "turkish": "güneş"},
+                {"english": "moon", "turkish": "ay"},
+                {"english": "tree", "turkish": "ağaç"},
+                {"english": "flower", "turkish": "çiçek"}
+            ];
+            
+            // Eksik kelimeleri ekle
+            while (words.length < 10) {
+                const missingWordsCount = 10 - words.length;
+                for (let i = 0; i < missingWordsCount && i < defaultWords.length; i++) {
+                    if (!words.some(w => w.english === defaultWords[i].english)) {
+                        words.push(defaultWords[i]);
+                    }
+                }
+            }
+        }
+        
+        // DOM elementleri
+        const gameArea = document.querySelector('#game-area .word-container');
+        const scoreElement = document.getElementById('score');
+        const bestScoreElement = document.getElementById('best-score');
+        const timerElement = document.getElementById('timer');
+        const targetElement = document.getElementById('target');
+        const startBtn = document.getElementById('startBtn');
+        const gameStatus = document.getElementById('game-status');
+        
+        // Oyun parametreleri
+        let score = 0;
+        let bestScore = parseInt(bestScoreElement.textContent) || 0;
+        let timeLeft = 60;
+        let gameActive = false;
+        let currentTarget = null;
+        let timer = null;
+        let activeWords = [];
+        let processingClick = false; // Çift tıklama sorununu önlemek için
+        
+        // Kelime sözlüğü (hızlı arama için)
+        const wordDictionary = {};
+        words.forEach(word => {
+            wordDictionary[word.english] = word.turkish;
+        });
+        
+        // Kullanılabilir kelime çiftleri
+        let wordPairs = [];
+        
+        // En yüksek skoru sunucuya gönder
+        function updateBestScore() {
+            fetch('/games/update-score/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    game_type: 'word_hunt',
+                    score: bestScore
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('En yüksek skor güncellendi:', data.best_score);
+                }
+            })
+            .catch(error => {
+                console.error('Skor güncellenirken hata:', error);
+            });
+        }
+        
+        // CSRF token cookie değerini al
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        // Rastgele kelime çiftleri oluştur
+        function createWordPairs() {
+            wordPairs = [];
+            
+            // Kelimeleri karıştır
+            const shuffledWords = [...words];
+            shuffleArray(shuffledWords);
+            
+            // Her kelime için
+            for (let i = 0; i < shuffledWords.length; i++) {
+                // Doğru eşleşme
+                wordPairs.push({
+                    english: shuffledWords[i].english,
+                    turkish: shuffledWords[i].turkish,
+                    isCorrect: true
+                });
+                
+                // Yanlış eşleşme (başka bir kelimenin çevirisi)
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * shuffledWords.length);
+                } while (randomIndex === i);
+                
+                wordPairs.push({
+                    english: shuffledWords[i].english,
+                    turkish: shuffledWords[randomIndex].turkish,
+                    isCorrect: false
+                });
+            }
+            
+            // Çiftleri karıştır
+            shuffleArray(wordPairs);
+        }
+        
+        // Diziyi karıştır
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        // Yeni bir hedef kelime belirle
+        function setNewTarget() {
+            if (words.length === 0) return;
+            
+            const randomIndex = Math.floor(Math.random() * words.length);
+            currentTarget = words[randomIndex].english;
+            targetElement.textContent = currentTarget;
+            
+            // Hedefi vurgulamak için animasyon
+            targetElement.classList.add('highlight');
+            setTimeout(() => {
+                targetElement.classList.remove('highlight');
+            }, 500);
+            
+            return currentTarget;
+        }
+        
+        // Kelime kartı oluştur
+        function createWordCard(wordPair) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'col-6 col-md-4';
+            
+            const innerCardDiv = document.createElement('div');
+            innerCardDiv.className = 'card word-card text-center p-3';
+            innerCardDiv.dataset.english = wordPair.english;
+            innerCardDiv.dataset.turkish = wordPair.turkish;
+            innerCardDiv.dataset.correct = wordPair.isCorrect;
+            
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body';
+            
+            const english = document.createElement('h5');
+            english.className = 'card-title mb-2';
+            english.textContent = wordPair.english;
+            
+            const turkish = document.createElement('p');
+            turkish.className = 'card-text';
+            turkish.textContent = wordPair.turkish;
+            
+            cardBody.appendChild(english);
+            cardBody.appendChild(turkish);
+            innerCardDiv.appendChild(cardBody);
+            cardDiv.appendChild(innerCardDiv);
+            
+            // İşleyicileri ekle (addEventListener yerine direkt atama daha güvenilir)
+            innerCardDiv.onclick = handleWordClick;
+            
+            return cardDiv;
+        }
+        
+        // Oyun alanına yeni kelimeler ekle
+        function addNewWords() {
+            if (!gameActive) return;
+            
+            // Mevcut kelimeleri temizle
+            gameArea.innerHTML = '';
+            activeWords = [];
+            
+            // Çiftlerin tükenip tükenmediğini kontrol et
+            if (wordPairs.length < 6) {
+                // Kelime çiftleri tükenmeye başladıysa yeniden oluştur
+                createWordPairs();
+            }
+            
+            // Her seferinde 6 kelime göster
+            const displayCount = 6;
+            const selectedWordPairs = wordPairs.splice(0, displayCount);
+            
+            // Eklemeden önce doğru hedef kelime için bir kart olduğundan emin ol
+            let hasTargetWordMatch = selectedWordPairs.some(pair => 
+                pair.english === currentTarget && pair.isCorrect);
+            
+            // Eğer hedef kelime için doğru eşleşme yoksa, ekle
+            if (!hasTargetWordMatch && currentTarget) {
+                // Doğru hedef kelime çiftini oluştur
+                const correctPair = {
+                    english: currentTarget,
+                    turkish: wordDictionary[currentTarget],
+                    isCorrect: true
+                };
+                
+                // Rastgele bir yanlış kelime çiftini doğru hedef kelime ile değiştir
+                const randomIndex = Math.floor(Math.random() * selectedWordPairs.length);
+                selectedWordPairs[randomIndex] = correctPair;
+            }
+            
+            // Kelimeleri karıştır
+            shuffleArray(selectedWordPairs);
+            
+            // Kelimeleri ekle
+            selectedWordPairs.forEach(wordPair => {
+                const wordCard = createWordCard(wordPair);
+                gameArea.appendChild(wordCard);
+                activeWords.push(wordPair);
+            });
+            
+            // Durum mesajını temizle
+            gameStatus.classList.add('d-none');
+            
+            // İşlem durumunu sıfırla
+            processingClick = false;
+        }
+        
+        // Kelime kartına tıklama işlemi
+        function handleWordClick(e) {
+            if (!gameActive || processingClick) return;
+            
+            // Çift tıklama sorununu önlemek için işlem durumunu ayarla
+            processingClick = true;
+            
+            const card = this; // 'this' tıklanan elementi ifade ediyor
+            const english = card.dataset.english;
+            const isCorrect = card.dataset.correct === 'true';
+            
+            // Durum mesajını göster
+            gameStatus.classList.remove('d-none');
+            
+            if (english === currentTarget && isCorrect) {
+                // Doğru eşleşme
+                score += 10;
+                card.classList.add('correct');
+                
+                // Görsel geri bildirim
+                gameStatus.textContent = 'Doğru! +10 puan';
+                gameStatus.className = 'alert alert-success text-center';
+                
+                // Skorun güncellenmesi
+                scoreElement.textContent = score;
+                
+                // En yüksek puan kontrolü ve güncelleme
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestScoreElement.textContent = bestScore;
+                }
+                
+                // Doğru kart için kısa bir gecikme sonrası yeni kelimelere geç
+                setTimeout(() => {
+                    // Yeni bir hedef belirle
+                    setNewTarget();
+                    
+                    // Yeni kelimeler ekle
+                    addNewWords();
+                }, 800);
+            } else {
+                // Yanlış eşleşme
+                score = Math.max(0, score - 5);
+                card.classList.add('wrong');
+                
+                // Görsel geri bildirim
+                gameStatus.textContent = 'Yanlış! -5 puan';
+                gameStatus.className = 'alert alert-danger text-center';
+                
+                // Skorun güncellenmesi
+                scoreElement.textContent = score;
+                
+                // Yanlış işaretleme için görsel geribildirimi kaldır
+                setTimeout(() => {
+                    card.classList.remove('wrong');
+                    processingClick = false; // İşlem durumunu sıfırla
+                }, 800);
+            }
+        }
+        
+        // Zamanlayıcıyı başlat
+        function startTimer() {
+            if (timer) clearInterval(timer);
+            
+            timer = setInterval(function() {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                
+                // Kalan süreye göre renk değiştirme
+                if (timeLeft <= 10) {
+                    timerElement.style.color = '#e74c3c'; // Kırmızı
+                } else if (timeLeft <= 30) {
+                    timerElement.style.color = '#f39c12'; // Turuncu
+                }
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+        
+        // Oyunu bitir
+        function endGame() {
+            gameActive = false;
+            clearInterval(timer);
+            processingClick = false; // İşlem durumunu temizle
+            
+            // En yüksek puan kontrolü
+            if (score > bestScore) {
+                bestScore = score;
+                bestScoreElement.textContent = bestScore;
+                // Sunucuya en yüksek puanı gönder
+                updateBestScore();
+            }
+            
+            // DOM güncellemeleri
+            startBtn.innerHTML = '<i class="fas fa-redo me-2"></i> Tekrar Oyna';
+            startBtn.disabled = false;
+            gameStatus.textContent = 'Oyun Bitti!';
+            gameStatus.className = 'alert alert-info text-center';
+            gameStatus.classList.remove('d-none'); // Oyun durumunu göster
+            
+            // Mevcut kelimeleri temizle
+            gameArea.innerHTML = '';
+            
+            // Sonuç mesajı
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'col-12 text-center py-5';
+            resultDiv.innerHTML = `
+                <h3>Oyun Bitti!</h3>
+                <p class="display-4">Puanınız: ${score}</p>
+                <p>En yüksek puanınız: ${bestScore}</p>
+                <p>Tekrar oynamak için "Tekrar Oyna" butonuna tıklayın.</p>
+            `;
+            gameArea.appendChild(resultDiv);
+        }
+        
+        // Oyunu başlat
+        function startGame() {
+            // Değişkenleri sıfırla
+            score = 0;
+            timeLeft = 60;
+            gameActive = true;
+            processingClick = false;
+            
+            // DOM güncellemeleri
+            scoreElement.textContent = score;
+            timerElement.textContent = timeLeft;
+            timerElement.style.color = ''; // Renk sıfırlama
+            startBtn.disabled = true;
+            gameStatus.textContent = 'Oynuyor...';
+            gameStatus.className = 'alert alert-success text-center';
+            gameStatus.classList.remove('d-none'); // Oyun durumunu göster
+            
+            // Kelime çiftlerini oluştur
+            createWordPairs();
+            
+            // İlk hedef kelimeyi belirle
+            setNewTarget();
+            
+            // İlk kelimeleri ekle
+            addNewWords();
+            
+            // Zamanlayıcıyı başlat
+            startTimer();
+        }
+        
+        // Event listener'ları ekle
+        startBtn.addEventListener('click', startGame);
+    }
+</script>
+{% endblock %} 

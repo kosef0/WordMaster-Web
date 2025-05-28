@@ -1,0 +1,274 @@
+<div class="learning-step final-quiz-step">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Final Quiz:</strong> Bu adım, kategorideki tüm kelimelerden oluşan bir final sınavıdır. Başarılı olmak için sadece 3 yanlış yapma hakkınız var. Başarısız olursanız, quizi tekrar çözmeniz gerekecektir.
+            </div>
+        </div>
+    </div>
+    
+    {% if not quiz_started %}
+    <!-- Quiz Başlangıç Ekranı -->
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="card-title mb-4">Final Quiz'e Hazır mısınız?</h2>
+                    <p class="card-text">
+                        Bu quiz, "{{ category.name }}" kategorisindeki {{ words|length }} kelimeden oluşmaktadır.
+                        Başarılı olmak için en fazla 3 yanlış yapabilirsiniz.
+                    </p>
+                    
+                    <div class="quiz-info mt-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-item">
+                                    <i class="fas fa-question-circle fa-2x mb-2 text-primary"></i>
+                                    <h5>{{ words|length }} Soru</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-item">
+                                    <i class="fas fa-clock fa-2x mb-2 text-primary"></i>
+                                    <h5>Süre Sınırı Yok</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-item">
+                                    <i class="fas fa-times-circle fa-2x mb-2 text-danger"></i>
+                                    <h5>3 Yanlış Hakkı</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="start_quiz" value="1">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-play me-2"></i> Quiz'e Başla
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    
+    <!-- Quiz Soruları -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Soru {{ current_question_index }}/{{ total_questions }}</span>
+                    <span class="badge bg-danger">Kalan Yanlış Hakkı: {{ remaining_errors }}</span>
+                </div>
+                <div class="card-body">
+                    <h3 class="question-word mb-4 text-center">{{ current_question.word.english }}</h3>
+                    
+                    <form method="post" id="quiz-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="question_id" value="{{ current_question.id }}">
+                        
+                        <div class="options">
+                            {% for option in current_question.options %}
+                            <div class="option mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="answer" 
+                                           id="option-{{ forloop.counter }}" value="{{ option }}">
+                                    <label class="form-check-label" for="option-{{ forloop.counter }}">
+                                        {{ option }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i> Cevabı Gönder
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if previous_answer %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="previous-answer">
+                        {% if previous_answer.is_correct %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i> <strong>Doğru cevap!</strong>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-danger">
+                            <i class="fas fa-times-circle me-2"></i> <strong>Yanlış cevap!</strong>
+                            <p class="mb-0 mt-2">Doğru cevap: <strong>{{ previous_answer.correct_answer }}</strong></p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Quiz İlerleme Bilgisi -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quiz İlerlemesi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ progress_percentage }}%;" 
+                             aria-valuenow="{{ progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ progress_percentage }}%
+                        </div>
+                    </div>
+                    
+                    <div class="quiz-stats mb-4">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="stat-item">
+                                    <h6>Tamamlanan</h6>
+                                    <p class="mb-0">{{ answered_questions }}/{{ total_questions }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-item">
+                                    <h6>Doğru</h6>
+                                    <p class="mb-0">{{ correct_answers }}/{{ answered_questions }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="quiz-stats">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="stat-item">
+                                    <h6>Başarı</h6>
+                                    <p class="mb-0">{{ success_rate }}%</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-item">
+                                    <h6>Kalan Hata</h6>
+                                    <p class="mb-0">{{ remaining_errors }}/3</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if quiz_completed %}
+    <!-- Quiz Sonuç Ekranı -->
+    <div class="row mt-4">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if quiz_passed %}
+                    <div class="quiz-result success mb-4">
+                        <i class="fas fa-trophy fa-4x text-warning mb-3"></i>
+                        <h2 class="text-success">Tebrikler! Quiz'i Geçtiniz!</h2>
+                        <p class="lead">Bir sonraki kategorinin kilidi açıldı.</p>
+                    </div>
+                    {% else %}
+                    <div class="quiz-result fail mb-4">
+                        <i class="fas fa-exclamation-circle fa-4x text-danger mb-3"></i>
+                        <h2 class="text-danger">Quiz'i Geçemediniz!</h2>
+                        <p class="lead">3'ten fazla yanlış yaptınız. Lütfen tekrar deneyin.</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="quiz-summary mb-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="summary-item">
+                                    <h4>{{ correct_answers }}</h4>
+                                    <p>Doğru Cevap</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="summary-item">
+                                    <h4>{{ wrong_answers }}</h4>
+                                    <p>Yanlış Cevap</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="summary-item">
+                                    <h4>{{ success_rate }}%</h4>
+                                    <p>Başarı Oranı</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="quiz-actions">
+                        {% if quiz_passed %}
+                            <form method="post" action="{% url 'complete_learning_step' learning_step.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="score" value="{{ correct_answers }}">
+                                <input type="hidden" name="max_score" value="{{ total_questions }}">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-check-circle me-2"></i> Adımı Tamamla
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="retry_quiz" value="1">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-redo me-2"></i> Yeniden Dene
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .quiz-info .info-item {
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .option {
+        padding: 10px;
+        border-radius: 5px;
+        transition: all 0.2s;
+    }
+    
+    .option:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .quiz-result.success {
+        color: #28a745;
+    }
+    
+    .quiz-result.fail {
+        color: #dc3545;
+    }
+    
+    .summary-item {
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .summary-item h4 {
+        font-size: 2rem;
+        margin-bottom: 0;
+    }
+</style> 

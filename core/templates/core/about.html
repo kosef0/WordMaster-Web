@@ -1,0 +1,148 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Word Master Hakkında{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-header {
+        background-color: #f8f9fa;
+        padding: 80px 0 40px;
+        text-align: center;
+    }
+    
+    .about-section {
+        padding: 80px 0;
+    }
+    
+    .about-title {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #1cb0f6;
+        margin-bottom: 20px;
+    }
+    
+    .about-subtitle {
+        font-size: 1.4rem;
+        color: #555;
+        max-width: 700px;
+        margin: 0 auto 40px;
+    }
+    
+    .feature-card {
+        background-color: #fff;
+        border-radius: 16px;
+        padding: 30px;
+        transition: all 0.3s ease;
+        height: 100%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: rgba(28, 176, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: #1cb0f6;
+        font-size: 2rem;
+    }
+    
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    .feature-text {
+        color: #666;
+        text-align: center;
+        line-height: 1.6;
+    }
+    
+    .contact-cta {
+        background-color: #1cb0f6;
+        padding: 60px 0;
+        text-align: center;
+        color: white;
+        margin-top: 50px;
+        border-radius: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-header">
+    <div class="container">
+        <h1 class="about-title">Word Master Hakkında</h1>
+        <p class="about-subtitle">Word Master, İngilizce kelime öğrenmek isteyenler için tasarlanmış etkili ve eğlenceli bir platformdur.</p>
+    </div>
+</div>
+
+<div class="about-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">Bilimsel Metodlar</h3>
+                    <p class="feature-text">Bilişsel psikoloji ve bellek araştırmalarına dayalı tekniklerle kelimeleri daha hızlı ve kalıcı öğrenin.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="feature-title">Oyunlaştırma</h3>
+                    <p class="feature-text">Eğlenceli oyunlar ve aktivitelerle öğrenme sürecinizi keyifli hale getirin ve motivasyonunuzu yüksek tutun.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">Kişisel İlerleme</h3>
+                    <p class="feature-text">Detaylı ilerleme analizleri ve raporlarla gelişiminizi takip edin, güçlü ve zayıf yönlerinizi keşfedin.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="about-section bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="mb-4" style="color: #1cb0f6; font-weight: 800;">Misyonumuz</h2>
+                <p class="mb-4">Word Master olarak amacımız, dil öğrenmeyi herkes için erişilebilir ve eğlenceli hale getirmektir. Bilimsel metotları oyunlaştırma ile birleştirerek, kullanıcılarımızın motivasyonunu yüksek tutmayı ve öğrenme süreçlerini daha keyifli hale getirmeyi hedefliyoruz.</p>
+                <p>İngilizce kelime öğrenmek isteyenler için özel olarak tasarlanmış platformumuzla, kişiselleştirilmiş öğrenme deneyimi sunarak, kullanıcılarımızın hedeflerine daha hızlı ulaşmalarına yardımcı oluyoruz.</p>
+            </div>
+            <div class="col-lg-6">
+                <img src="https://img.freepik.com/free-vector/language-learning-concept-illustration_114360-6011.jpg" alt="Misyonumuz" class="img-fluid rounded-3 shadow">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="about-section">
+    <div class="container">
+        <div class="contact-cta">
+            <h2 class="mb-4">Sorularınız mı var?</h2>
+            <p class="mb-4">Platformumuz hakkında daha fazla bilgi almak veya sorularınız için bizimle iletişime geçin.</p>
+            <a href="{% url 'contact' %}" class="btn btn-light btn-lg px-5">Bizimle İletişime Geçin</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

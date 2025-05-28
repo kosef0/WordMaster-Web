@@ -1,0 +1,206 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Word Master - İletişim{% endblock %}
+
+{% block extra_css %}
+<style>
+    .contact-header {
+        background-color: #f8f9fa;
+        padding: 80px 0 40px;
+        text-align: center;
+    }
+    
+    .contact-title {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #1cb0f6;
+        margin-bottom: 20px;
+    }
+    
+    .contact-subtitle {
+        font-size: 1.4rem;
+        color: #555;
+        max-width: 700px;
+        margin: 0 auto 40px;
+    }
+    
+    .contact-section {
+        padding: 60px 0;
+    }
+    
+    .contact-form {
+        background-color: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .contact-form label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #444;
+    }
+    
+    .contact-form .form-control {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+    }
+    
+    .contact-form .form-control:focus {
+        box-shadow: 0 0 0 3px rgba(28, 176, 246, 0.2);
+        border-color: #1cb0f6;
+    }
+    
+    .contact-form textarea {
+        min-height: 150px;
+    }
+    
+    .contact-btn {
+        background-color: #1cb0f6;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 25px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s;
+    }
+    
+    .contact-btn:hover {
+        background-color: #0091da;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(28, 176, 246, 0.3);
+    }
+    
+    .contact-info-card {
+        background-color: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+    }
+    
+    .contact-info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .contact-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(28, 176, 246, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
+        color: #1cb0f6;
+        font-size: 1.5rem;
+    }
+    
+    .contact-info {
+        flex: 1;
+    }
+    
+    .contact-info h4 {
+        margin-bottom: 5px;
+        font-weight: 700;
+    }
+    
+    .contact-info p {
+        margin: 0;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-header">
+    <div class="container">
+        <h1 class="contact-title">Bizimle İletişime Geçin</h1>
+        <p class="contact-subtitle">Soru, görüş ve önerileriniz için aşağıdaki iletişim formunu kullanabilirsiniz.</p>
+    </div>
+</div>
+
+<div class="contact-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7 mb-4 mb-lg-0">
+                <div class="contact-form">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Adınız</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Adınız Soyadınız" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta Adresiniz</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="ornek@email.com" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Konu</label>
+                            <input type="text" class="form-control" id="subject" name="subject" placeholder="Mesajınızın konusu" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Mesajınız</label>
+                            <textarea class="form-control" id="message" name="message" placeholder="Mesajınızı buraya yazın..." required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="contact-btn">Gönder</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-lg-5">
+                <div class="contact-info-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="contact-info">
+                        <h4>Adres</h4>
+                        <p>İstanbul, Türkiye</p>
+                    </div>
+                </div>
+                
+                <div class="contact-info-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="contact-info">
+                        <h4>E-posta</h4>
+                        <p>info@wordmaster.com</p>
+                    </div>
+                </div>
+                
+                <div class="contact-info-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="contact-info">
+                        <h4>Telefon</h4>
+                        <p>+90 (212) 123 45 67</p>
+                    </div>
+                </div>
+                
+                <div class="contact-info-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="contact-info">
+                        <h4>Çalışma Saatleri</h4>
+                        <p>Pazartesi - Cuma: 09:00 - 18:00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Word Master - İngilizce Öğrenmenin En Kolay Yolu{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation Library -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/duolingo-style.css">
+    
+    <!-- Ek stiller -->
+    <style>
+        :root {
+            --primary: #1cb0f6;
+            --primary-dark: #1184c1;
+            --secondary: #4cc9f0;
+            --secondary-dark: #3a8eba;
+            --warning: #ff9600;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #f0f0f0;
+        }
+          
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #fafafa;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(28, 176, 246, 0.03) 0%, rgba(76, 201, 240, 0.03) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Progress bar genişlik sınıfları */
+        .w-0 { width: 0%; }
+        .w-5 { width: 5%; }
+        .w-10 { width: 10%; }
+        .w-15 { width: 15%; }
+        .w-20 { width: 20%; }
+        .w-25 { width: 25%; }
+        .w-30 { width: 30%; }
+        .w-35 { width: 35%; }
+        .w-40 { width: 40%; }
+        .w-45 { width: 45%; }
+        .w-50 { width: 50%; }
+        .w-55 { width: 55%; }
+        .w-60 { width: 60%; }
+        .w-65 { width: 65%; }
+        .w-70 { width: 70%; }
+        .w-75 { width: 75%; }
+        .w-80 { width: 80%; }
+        .w-85 { width: 85%; }
+        .w-90 { width: 90%; }
+        .w-95 { width: 95%; }
+        .w-100 { width: 100%; }
+        
+        /* Grafik çubuğu yükseklik sınıfları */
+        .h-0 { height: 0px; }
+        .h-5 { height: 5px; }
+        .h-10 { height: 10px; }
+        .h-15 { height: 15px; }
+        .h-20 { height: 20px; }
+        .h-25 { height: 25px; }
+        .h-30 { height: 30px; }
+        .h-35 { height: 35px; }
+        .h-40 { height: 40px; }
+        .h-45 { height: 45px; }
+        .h-50 { height: 50px; }
+        .h-60 { height: 60px; }
+        .h-70 { height: 70px; }
+        .h-80 { height: 80px; }
+        .h-90 { height: 90px; }
+        .h-100 { height: 100px; }
+        
+        /* Yeni modern navbar stilleri */
+        .navbar {
+            background-color: #fff;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        .navbar.scrolled {            padding: 10px 0;            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);        }
+        
+        .navbar-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .navbar-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-logo:hover {            color: var(--primary-dark);        }
+        
+        .navbar-logo i {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+        
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-item {
+            margin: 0 12px;
+            font-weight: 500;
+            color: var(--dark);
+            text-decoration: none;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .navbar-item::after {            content: '';            position: absolute;            bottom: 0;            left: 0;            width: 0;            height: 2px;            background-color: var(--primary);        }                .navbar-item:hover, .navbar-item.active {            color: var(--primary);        }                .navbar-item.active::after {            width: 100%;        }
+        
+        .navbar-auth .btn {
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-auth .btn-secondary {
+            background-color: white;
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+        }
+        
+        .navbar-auth .btn-secondary:hover {            background-color: var(--secondary);            color: white;        }
+        
+        .navbar-auth .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .navbar-auth .btn-primary:hover {            background-color: var(--primary-dark);            border-color: var(--primary-dark);        }
+        
+        /* Section stilleri */
+        section {
+            padding: 80px 0;
+        }
+        
+        section h2 {
+            position: relative;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+        
+        /* Footer stilleri */
+        footer {
+            background-color: #2d3f51;
+            color: #fff;
+            padding-top: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(28, 176, 246, 0.05) 0%, rgba(76, 201, 240, 0.05) 100%);
+            pointer-events: none;
+        }
+        
+        footer h5, footer h6 {
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .footer-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .footer-links li {
+            margin-bottom: 15px;
+        }
+        
+                .footer-links a {            color: rgba(255, 255, 255, 0.8);            text-decoration: none;        }
+        
+        .footer-links a:hover {
+            color: white;
+            text-decoration: none;
+        }
+        
+                .social-icons a {            display: inline-flex;            align-items: center;            justify-content: center;            width: 40px;            height: 40px;            border-radius: 50%;            background-color: rgba(255, 255, 255, 0.1);        }                .social-icons a:hover {            background-color: var(--primary);        }
+        
+        .copyright {
+            color: rgba(255, 255, 255, 0.7);
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        /* Kart stilleri */
+                .card {            border-radius: 16px;            overflow: hidden;            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);            border: none;        }                .card:hover {            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);        }
+        
+        /* Animasyonlar */
+        .animated {
+            animation-duration: 1s;
+            animation-fill-mode: both;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .fadeIn {
+            animation-name: fadeIn;
+        }
+        
+        .slideInUp {
+            animation-name: slideInUp;
+        }
+        
+        .pulse {
+            animation-name: pulse;
+            animation-iteration-count: infinite;
+            animation-duration: 2s;
+        }
+        
+        /* Ana içerik için padding */
+        main {
+            padding-top: 80px;
+        }
+        
+        /* Header menüsü için özel stiller */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-wrap: wrap;
+                padding: 0 15px;
+            }
+            
+            .navbar-menu {
+                order: 3;
+                width: 100%;
+                margin-top: 15px;
+                overflow-x: auto;
+                display: flex;
+                padding-bottom: 5px;
+                justify-content: flex-start;
+                scrollbar-width: none;
+            }
+            
+            .navbar-menu::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .navbar-auth {
+                margin-left: auto;
+            }
+        }
+        
+        /* Özel renk stilleri */
+        .bg-primary-light {
+            background-color: rgba(28, 176, 246, 0.1);
+        }
+        
+        .bg-secondary-light {
+            background-color: rgba(76, 201, 240, 0.1);
+        }
+        
+        .bg-warning-light {
+            background-color: rgba(255, 150, 0, 0.1);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container navbar-container">
+                        <a class="navbar-logo" href="{% url 'home' %}">                <i class="fas fa-book-reader"></i> Word Master            </a>                        <div class="navbar-menu">                
+                <a class="navbar-item {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Ana Sayfa</a>                
+                {% if user.is_authenticated %}                    
+                    <a class="navbar-item {% if 'categories' in request.path %}active{% endif %}" href="{% url 'category_list' %}">Kategoriler</a>                    
+                    <a class="navbar-item {% if 'quiz' in request.path %}active{% endif %}" href="{% url 'quiz_categories' %}">Quiz</a>                    
+                    <a class="navbar-item {% if 'games' in request.path %}active{% endif %}" href="{% url 'game_menu' %}">Oyunlar</a>                    
+                    <a class="navbar-item {% if 'learning-panel' in request.path %}active{% endif %}" href="{% url 'learning_panel' %}">Öğrenme Paneli</a>
+                    <a class="navbar-item {% if 'chat-practice' in request.path %}active{% endif %}" href="{% url 'chat_practice' %}">
+                        <i class="fas fa-comment-dots me-1"></i> Yapay Zeka Pratik
+                    </a>
+                {% else %}                    
+                    <a class="navbar-item" href="/#features">Özellikler</a>                    
+                    <a class="navbar-item" href="/#about">Hakkında</a>                    
+                    <a class="navbar-item" href="/#contact">İletişim</a>                
+                {% endif %}            
+                </div>                        <div class="navbar-auth">
+                {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <a class="btn btn-sm btn-primary dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'edit_profile' %}"><i class="fas fa-user-cog me-2"></i>Hesap Ayarları</a></li>
+                            <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="fas fa-chart-bar me-2"></i>Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-sm btn-secondary me-2">Giriş</a>
+                    <a href="{% url 'register' %}" class="btn btn-sm btn-primary">Kayıt</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ana İçerik -->
+    <main>
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-5">
+        <div class="container">
+            <div class="row g-4">
+                                <div class="col-lg-5 col-md-6">                    <h5 class="mb-3"><i class="fas fa-book-reader text-primary me-2"></i> Word Master</h5>                    <p class="mb-2">İngilizce kelime öğrenmenin ve pratik yapmanın en kolay ve eğlenceli yolu.</p>                    <div class="social-icons d-flex gap-3 mt-2">                        <a href="#" class="text-white"><i class="fab fa-facebook-f"></i></a>                        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>                        <a href="#" class="text-white"><i class="fab fa-linkedin-in"></i></a>                    </div>                </div>                                <div class="col-lg-2 col-md-6 col-6">                    <h6 class="fw-bold mb-2">Hızlı Linkler</h6>                    <ul class="footer-links ps-0">                        <li><a href="{% url 'home' %}">Ana Sayfa</a></li>                        {% if user.is_authenticated %}                            <li><a href="{% url 'learning_panel' %}">Öğrenme Paneli</a></li>                            <li><a href="{% url 'category_list' %}">Kategoriler</a></li>                            <li><a href="{% url 'quiz_categories' %}">Quiz</a></li>                            <li><a href="{% url 'game_menu' %}">Oyunlar</a></li>                            <li><a href="{% url 'profile' %}">Profilim</a></li>                        {% else %}                            <li><a href="/#features">Özellikler</a></li>                            <li><a href="/#about">Hakkında</a></li>                            <li><a href="/#contact">İletişim</a></li>                            <li><a href="{% url 'login' %}">Giriş Yap</a></li>                            <li><a href="{% url 'register' %}">Üye Ol</a></li>                        {% endif %}                    </ul>                </div>                                <div class="col-lg-2 col-md-6 col-6">                    <h6 class="fw-bold mb-2">Destek</h6>                    <ul class="footer-links ps-0">                        <li><a href="#">SSS</a></li>                        <li><a href="#">Yardım</a></li>                        <li><a href="/#contact">İletişim</a></li>                        <li><a href="#">Gizlilik</a></li>                    </ul>                </div>                                <div class="col-lg-3 col-md-6">
+                    <h6 class="fw-bold mb-2">İletişim</h6>
+                    <ul class="footer-links ps-0">
+                        <li><i class="fas fa-map-marker-alt me-2 text-primary"></i> İstanbul, Türkiye</li>
+                        <li><i class="fas fa-envelope me-2 text-primary"></i> info@wordmaster.com</li>
+                        <li><i class="fas fa-phone me-2 text-primary"></i> +90 (212) 123 45 67</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12 text-center">
+                    <p class="copyright">&copy; {% now "Y" %} Word Master. Tüm hakları saklıdır.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AOS Animation JS -->
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // AOS Animasyon başlatma
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                once: true,
+                easing: 'ease-in-out'
+            });
+            
+            // Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+            
+            // Scroll olayı için navbar efekti
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    
+                    if (targetId !== '#') {
+                        const targetElement = document.querySelector(targetId);
+                        if (targetElement) {
+                            window.scrollTo({
+                                top: targetElement.offsetTop - 80, // Offset for fixed navbar
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

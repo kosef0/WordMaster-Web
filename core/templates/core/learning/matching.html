@@ -1,0 +1,375 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ step.name }} - Word Master{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="mb-3">{{ step.name }}</h1>
+            <p class="lead">{{ step.description }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a href="{% url 'learning_panel' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Öğrenme Paneline Dön
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">İngilizce Kelimeler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="word-list" id="english-words">
+                        {% for word in words %}
+                            <div class="word-item" data-id="{{ forloop.counter }}" data-word="{{ word.english }}" data-match="{{ word.turkish }}">
+                                {{ word.english }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Türkçe Anlamlar</h5>
+                </div>
+                <div class="card-body">
+                    <div class="word-list" id="turkish-words">
+                        {% for word in words %}
+                            <div class="word-item" data-id="{{ forloop.counter }}" data-word="{{ word.turkish }}" data-match="{{ word.english }}">
+                                {{ word.turkish }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12 text-center" id="button-container">
+            <button id="check-answers" class="btn btn-primary btn-lg">
+                <i class="fas fa-check me-2"></i> Cevapları Kontrol Et
+            </button>
+            
+            <div id="success-message" class="alert alert-success mt-4" style="display: none;">
+                <h4><i class="fas fa-check-circle"></i> Tebrikler!</h4>
+                <p>Tüm eşleştirmeleri doğru yaptınız.</p>
+                <a id="next-step-button" href="#" class="btn btn-success mt-2">
+                    <i class="fas fa-arrow-right me-2"></i> Sonraki Adıma Geç
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.word-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.word-item {
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.word-item:hover {
+    background-color: #f8f9fa;
+}
+
+.word-item.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.word-item.matched {
+    border: 2px solid #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+    pointer-events: none;
+}
+
+.word-item.correct {
+    background-color: #28a745;
+    color: white;
+    border: 2px solid #218838;
+    pointer-events: none;
+}
+
+.word-item.incorrect {
+    background-color: #dc3545;
+    color: white;
+}
+
+.match-line {
+    position: absolute;
+    background-color: rgba(40, 167, 69, 0.5);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.word-item .match-icon {
+    position: absolute;
+    right: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #28a745;
+    font-size: 20px;
+}
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const englishWords = document.querySelectorAll('#english-words .word-item');
+    const turkishWords = document.querySelectorAll('#turkish-words .word-item');
+    const checkButton = document.getElementById('check-answers');
+    const successMessage = document.getElementById('success-message');
+    const nextStepButton = document.getElementById('next-step-button');
+    
+    let selectedEnglish = null;
+    let selectedTurkish = null;
+    let matchedPairs = 0;
+    let totalPairs = englishWords.length;
+    
+    // Eşleştirilmiş kelimeleri izlemek için
+    const matchedIds = new Set();
+    
+    // Türkçe kelimeleri karıştır
+    shuffleItems(turkishWords);
+    
+    // Sonraki adım butonuna tıklandığında
+    nextStepButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Kategori ve adım ID'lerini URL'den al
+        const urlParts = window.location.pathname.split('/');
+        const categoryId = urlParts[urlParts.length - 3]; // URL'in sondan üçüncü parçası
+        const currentStepId = urlParts[urlParts.length - 2]; // URL'in sondan ikinci parçası
+        
+        // Bir sonraki adımın ID'si (mevcut adım + 1)
+        const nextStepId = parseInt(currentStepId) + 1;
+        
+        // Sonraki adıma yönlendir
+        window.location.href = `/learning-step/${categoryId}/${nextStepId}/`;
+    });
+    
+    // İngilizce kelimelere tıklama olayı
+    englishWords.forEach(word => {
+        word.addEventListener('click', function() {
+            // Eğer bu kelime zaten eşleştirilmişse, hiçbir şey yapma
+            if (this.classList.contains('matched') || this.classList.contains('correct')) {
+                return;
+            }
+            
+            if (this.classList.contains('selected')) {
+                this.classList.remove('selected');
+                selectedEnglish = null;
+            } else {
+                // Diğer seçili İngilizce kelimelerin seçimini kaldır
+                englishWords.forEach(w => {
+                    if (!w.classList.contains('matched') && !w.classList.contains('correct')) {
+                        w.classList.remove('selected');
+                    }
+                });
+                this.classList.add('selected');
+                selectedEnglish = this;
+                
+                // Eğer hem İngilizce hem de Türkçe kelime seçiliyse, eşleştirmeyi kontrol et
+                if (selectedTurkish) {
+                    checkMatch();
+                }
+            }
+        });
+    });
+    
+    // Türkçe kelimelere tıklama olayı
+    turkishWords.forEach(word => {
+        word.addEventListener('click', function() {
+            // Eğer bu kelime zaten eşleştirilmişse, hiçbir şey yapma
+            if (this.classList.contains('matched') || this.classList.contains('correct')) {
+                return;
+            }
+            
+            if (this.classList.contains('selected')) {
+                this.classList.remove('selected');
+                selectedTurkish = null;
+            } else {
+                // Diğer seçili Türkçe kelimelerin seçimini kaldır
+                turkishWords.forEach(w => {
+                    if (!w.classList.contains('matched') && !w.classList.contains('correct')) {
+                        w.classList.remove('selected');
+                    }
+                });
+                this.classList.add('selected');
+                selectedTurkish = this;
+                
+                // Eğer hem İngilizce hem de Türkçe kelime seçiliyse, eşleştirmeyi kontrol et
+                if (selectedEnglish) {
+                    checkMatch();
+                }
+            }
+        });
+    });
+    
+    // Eşleştirmeyi kontrol et
+    function checkMatch() {
+        if (selectedEnglish && selectedTurkish) {
+            // Data ID'leri kullanarak eşleştirme yap - karıştırma sonrası da doğru çalışması için
+            const englishId = selectedEnglish.dataset.id;
+            const turkishId = selectedTurkish.dataset.id;
+            
+            if (englishId === turkishId) {
+                // Doğru eşleşme
+                selectedEnglish.classList.remove('selected');
+                selectedEnglish.classList.add('matched');
+                
+                selectedTurkish.classList.remove('selected');
+                selectedTurkish.classList.add('matched');
+                
+                // Bu ID'yi eşleştirilmiş olarak işaretle
+                matchedIds.add(englishId);
+                
+                // Eşleşme sayısını artır
+                matchedPairs++;
+                
+                // Seçili elemanları temizle
+                selectedEnglish = null;
+                selectedTurkish = null;
+                
+                // Tüm kelimeler eşleştirildi mi kontrol et
+                if (matchedPairs === totalPairs) {
+                    // Otomatik olarak cevapları kontrol et
+                    setTimeout(() => {
+                        checkAnswers();
+                    }, 500);
+                }
+            } else {
+                // Yanlış eşleşme - kısa süreliğine yanlış olduğunu göster
+                selectedEnglish.classList.add('incorrect');
+                selectedTurkish.classList.add('incorrect');
+                
+                setTimeout(() => {
+                    selectedEnglish.classList.remove('incorrect', 'selected');
+                    selectedTurkish.classList.remove('incorrect', 'selected');
+                    selectedEnglish = null;
+                    selectedTurkish = null;
+                }, 800);
+            }
+        }
+    }
+    
+    // Cevapları kontrol et
+    checkButton.addEventListener('click', checkAnswers);
+    
+    function checkAnswers() {
+        // Eğer tüm kelimeler eşleştirilmediyse, uyarı göster
+        if (matchedPairs < totalPairs) {
+            alert("Lütfen önce tüm kelimeleri eşleştirin!");
+            return;
+        }
+        
+        // Doğru eşleştirmelerin listesini hazırla - bu sefer farklı bir yaklaşım kullanıyoruz
+        // Backend'in beklediği formatta veri göndereceğiz
+        const correctPairs = [];
+        
+        // Her eşleştirme için, İngilizce kelimenin kendisi 'correct_answers' listesinde
+        // ve Türkçe karşılığı 'answers' listesinde olmalı
+        englishWords.forEach(englishWord => {
+            const english = englishWord.textContent.trim();
+            const turkish = englishWord.dataset.match;
+            
+            correctPairs.push({
+                english: english,
+                turkish: turkish
+            });
+        });
+        
+        // Doğru eşleştirmeleri düz dizilere dönüştür
+        const answers = correctPairs.map(pair => pair.turkish);
+        const correctAnswers = correctPairs.map(pair => pair.english);
+        
+        // AJAX ile cevapları gönder
+        fetch(`{% url 'check_step_completion' category.id step.id %}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: new URLSearchParams({
+                'answers[]': answers,
+                'correct_answers[]': correctAnswers
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Doğru cevapları işaretle
+                englishWords.forEach(word => {
+                    word.classList.remove('matched');
+                    word.classList.add('correct');
+                });
+                
+                turkishWords.forEach(word => {
+                    word.classList.remove('matched');
+                    word.classList.add('correct');
+                });
+                
+                // Başarı mesajını ve sonraki adım butonunu göster
+                checkButton.style.display = 'none';
+                successMessage.style.display = 'block';
+            } else {
+                // Hata durumunda detaylı bilgi göster
+                console.error('Sunucu yanıtı:', data);
+                alert("Hata: " + (data.message || "Sunucu yanıtı beklenmedik formatta."));
+            }
+        })
+        .catch(error => {
+            console.error('Fetch hatası:', error);
+            alert("Bir hata oluştu: " + error.message);
+        });
+    }
+    
+    // Türkçe kelimeleri karıştır
+    function shuffleItems(items) {
+        const parent = items[0].parentNode;
+        const itemsArray = Array.from(items);
+        
+        // Fisher-Yates algoritması ile karıştır
+        for (let i = itemsArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            parent.insertBefore(itemsArray[j], itemsArray[i]);
+        }
+    }
+    
+    // CSRF token'ı al
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} 

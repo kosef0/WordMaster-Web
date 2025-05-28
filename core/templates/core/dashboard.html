@@ -1,0 +1,529 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Gelişim Raporları - Word Master{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gelişim Raporların</h1>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary" id="weekly-btn">Haftalık</button>
+            <button class="btn btn-outline-primary active" id="monthly-btn">Aylık</button>
+            <button class="btn btn-outline-primary" id="all-time-btn">Tüm Zamanlar</button>
+        </div>
+    </div>
+    
+    <!-- Özet Kartları -->
+    <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="dashboard-card text-center h-100">
+                <div class="mb-3">
+                    <i class="fas fa-brain fa-3x text-primary"></i>
+                </div>
+                <h3>{{ learned_words }}</h3>
+                <p class="text-muted mb-0">Öğrenilen Kelime</p>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ learned_words|floatformat:0|default:0 }}%" aria-valuenow="{{ learned_words }}" aria-valuemin="0" aria-valuemax="{{ total_words }}"></div>
+                </div>
+                <small class="text-muted">Toplam {{ total_words }} kelimeden</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="dashboard-card text-center h-100">
+                <div class="mb-3">
+                    <i class="fas fa-trophy fa-3x text-warning"></i>
+                </div>
+                <h3>{{ mastered_words }}</h3>
+                <p class="text-muted mb-0">Tam Öğrenilen</p>
+                <div class="progress mt-2" style="height: 5px;">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ mastered_words|floatformat:0|default:0 }}%" aria-valuenow="{{ mastered_words }}" aria-valuemin="0" aria-valuemax="{{ learned_words }}"></div>
+                </div>
+                <small class="text-muted">Öğrenilen {{ learned_words }} kelimeden</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="dashboard-card text-center h-100">
+                <div class="mb-3">
+                    <i class="fas fa-sync-alt fa-3x text-danger"></i>
+                </div>
+                <h3>{{ to_review_words }}</h3>
+                <p class="text-muted mb-0">Tekrar Edilecek</p>
+                <div class="mt-2">
+                    <div class="d-flex justify-content-center">
+                        <div class="small-pill bg-danger"></div>
+                        <div class="small-pill bg-warning"></div>
+                        <div class="small-pill bg-success"></div>
+                    </div>
+                </div>
+                <small class="text-muted">Hafızanı tazele!</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="dashboard-card text-center h-100">
+                <div class="mb-3">
+                    <i class="fas fa-chart-line fa-3x text-success"></i>
+                </div>
+                <h3 id="daily-average">0</h3>
+                <p class="text-muted mb-0">Günlük Ortalama</p>
+                <div class="mt-2">
+                    <span class="badge rounded-pill bg-success trend-badge" id="trend-badge">
+                        <i class="fas fa-arrow-up"></i> 5%
+                    </span>
+                </div>
+                <small class="text-muted">Geçen haftaya göre</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Seviye ve İlerleme -->
+    {% if profile %}
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="dashboard-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h4 class="mb-0">Seviye {{ profile.level }}</h4>
+                        <small class="text-muted">Kelime Ustası olmaya doğru ilerliyorsun!</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary fs-5">{{ profile.experience_points }} XP</span>
+                        <div><small class="text-muted">{{ profile.experience_points }} / {{ next_level_exp }} XP</small></div>
+                    </div>
+                </div>
+                <div class="progress mb-2" style="height: 25px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                        style="width: {{ exp_percentage|floatformat:0 }}%" 
+                        aria-valuenow="{{ exp_percentage|floatformat:0 }}" 
+                        aria-valuemin="0" aria-valuemax="100">
+                        {{ exp_percentage|floatformat:0 }}%
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">Şimdiki seviye</small>
+                    <small class="text-muted">Sonraki seviye: {{ profile.level|add:"1" }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Başarı Grafikleri -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="dashboard-card h-100">
+                <h4 class="mb-3">Öğrenme Performansı</h4>
+                <canvas id="learningChart" height="250"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="dashboard-card h-100">
+                <h4 class="mb-3">Quiz Başarı Oranları</h4>
+                <canvas id="quizChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Kategori İlerlemeleri -->
+    <div class="row mb-4">
+        <div class="col-lg-12 mb-3">
+            <h2>Kategori İlerlemeleri</h2>
+            <p class="text-muted">Hangi kategorilerde ne kadar ilerledin?</p>
+        </div>
+        
+        <div class="col-lg-5 mb-4">
+            <div class="dashboard-card h-100">
+                <canvas id="categoryPieChart" height="250"></canvas>
+            </div>
+        </div>
+        
+        <div class="col-lg-7 mb-4">
+            <div class="dashboard-card">
+                <div class="category-progress-container">
+                    {% for progress in category_progress %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0">{{ progress.category.name }}</h6>
+                                <span class="badge bg-info">{{ progress.learned }} / {{ progress.total }}</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar" 
+                                    style="width: {{ progress.percentage }}%" 
+                                    aria-valuenow="{{ progress.percentage }}" 
+                                    aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <small class="text-muted">{{ progress.percentage }}% tamamlandı</small>
+                                <a href="{% url 'category_detail' progress.category.id %}" class="btn btn-sm btn-outline-primary">Kelimelere Git</a>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="alert alert-info">
+                            Henüz herhangi bir kategoride ilerleme kaydetmediniz. 
+                            <a href="{% url 'category_list' %}" class="alert-link">Kategorilere göz atarak</a> öğrenmeye başlayabilirsiniz.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Aktivite Grafiği -->
+    <div class="row">
+        <div class="col-lg-12 mb-3">
+            <h2>Aktivite Analizi</h2>
+            <p class="text-muted">Son 8 gündeki çalışma performansın</p>
+        </div>
+        <div class="col-lg-12 mb-4">
+            <div class="dashboard-card">
+                <canvas id="activityChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Öğrenme Hedefleri -->
+    <div class="row mb-4">
+        <div class="col-lg-12 mb-3">
+            <h2>Öğrenme Hedefleri</h2>
+            <p class="text-muted">İlerlemeni hızlandırmak için tamamlaman gereken görevler</p>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="dashboard-card h-100">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="goal-icon me-3">
+                        <i class="fas fa-fire text-danger"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Günlük Hedef</h5>
+                        <p class="text-muted mb-0">10 yeni kelime öğren</p>
+                    </div>
+                </div>
+                <div class="progress mb-2" style="height: 10px;">
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">4/10 kelime</small>
+                    <small class="text-muted">Kalan: 6</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="dashboard-card h-100">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="goal-icon me-3">
+                        <i class="fas fa-calendar-week text-success"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Haftalık Hedef</h5>
+                        <p class="text-muted mb-0">3 kategori tamamla</p>
+                    </div>
+                </div>
+                <div class="progress mb-2" style="height: 10px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 67%" aria-valuenow="67" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">2/3 kategori</small>
+                    <small class="text-muted">Kalan: 1</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="dashboard-card h-100">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="goal-icon me-3">
+                        <i class="fas fa-star text-warning"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Aylık Meydan Okuma</h5>
+                        <p class="text-muted mb-0">500 kelime öğren</p>
+                    </div>
+                </div>
+                <div class="progress mb-2" style="height: 10px;">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">390/500 kelime</small>
+                    <small class="text-muted">Kalan: 110</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hızlı Eylemler -->
+    <div class="row">
+        <div class="col-lg-12 mb-3">
+            <h2>Öğrenmeye Devam Et</h2>
+            <p class="text-muted">Seviyeni yükseltmek için şunları deneyebilirsin</p>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="dashboard-card h-100">
+                <div class="text-center mb-3">
+                    <i class="fas fa-random fa-3x text-primary mb-3"></i>
+                    <h5>Kelime Quizi</h5>
+                    <p>Tüm kategorilerden rastgele kelimelerle kendini test et.</p>
+                    <a href="{% url 'quiz_start' %}" class="btn btn-primary">Quiz Başlat</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="dashboard-card h-100">
+                <div class="text-center mb-3">
+                    <i class="fas fa-sync-alt fa-3x text-warning mb-3"></i>
+                    <h5>Tekrar Çalışması</h5>
+                    <p>Tam öğrenemediğin {{ to_review_words }} kelime ile bilgini pekiştir.</p>
+                    <a href="{% url 'quiz_start' %}" class="btn btn-warning text-white">Tekrar Et</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="dashboard-card h-100">
+                <div class="text-center mb-3">
+                    <i class="fas fa-gamepad fa-3x text-success mb-3"></i>
+                    <h5>Eğlenerek Öğren</h5>
+                    <p>Oyunlarla hem eğlen hem de kelime hazineni genişlet.</p>
+                    <a href="{% url 'game_menu' %}" class="btn btn-success">Oyunlara Git</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js kütüphanesini ekle -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Aktivite grafiği
+        const activityChartEl = document.getElementById('activityChart').getContext('2d');
+        const activityData = [
+            {% for day in activity_chart %}
+                {{ day.count|default:0 }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        const activityLabels = [
+            {% for day in activity_chart %}
+                '{{ day.date }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        new Chart(activityChartEl, {
+            type: 'bar',
+            data: {
+                labels: activityLabels,
+                datasets: [{
+                    label: 'Çalışılan Kelime Sayısı',
+                    data: activityData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Günlük Çalışma Aktivitesi'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Kelime Sayısı'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Gün'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Kategori pasta grafiği
+        const categoryPieChartEl = document.getElementById('categoryPieChart').getContext('2d');
+        const categoryData = [
+            {% for progress in category_progress %}
+                {{ progress.percentage }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        const categoryLabels = [
+            {% for progress in category_progress %}
+                '{{ progress.category.name }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        const categoryColors = generateColors(categoryData.length);
+        
+        new Chart(categoryPieChartEl, {
+            type: 'doughnut',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: categoryColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Kategori Tamamlanma Yüzdeleri'
+                    }
+                }
+            }
+        });
+        
+        // Öğrenme performansı çizgi grafiği (örnek veri)
+        const learningChartEl = document.getElementById('learningChart').getContext('2d');
+        
+        new Chart(learningChartEl, {
+            type: 'line',
+            data: {
+                labels: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran'],
+                datasets: [{
+                    label: 'Öğrenilen Kelimeler',
+                    data: [65, 120, 190, 245, 290, {{ learned_words }}],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Aylara Göre Öğrenilen Kelime Sayısı'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Quiz başarı oranları (örnek veri)
+        const quizChartEl = document.getElementById('quizChart').getContext('2d');
+        
+        new Chart(quizChartEl, {
+            type: 'bar',
+            data: {
+                labels: ['Temel Kelimeler', 'Yiyecekler', 'Renkler', 'Sayılar', 'Hayvanlar', 'Meslekler'],
+                datasets: [{
+                    label: 'Doğru Yanıt Oranı (%)',
+                    data: [95, 85, 78, 92, 88, 73],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(153, 102, 255, 0.5)',
+                        'rgba(255, 159, 64, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Kategorilere Göre Quiz Başarı Oranları'
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+        
+        // Aktivite verilerinden günlük ortalama hesapla
+        const nonZeroActivities = activityData.filter(count => count > 0);
+        const dailyAverage = nonZeroActivities.length > 0 ? 
+            Math.round(nonZeroActivities.reduce((a, b) => a + b, 0) / nonZeroActivities.length) : 0;
+        document.getElementById('daily-average').textContent = dailyAverage;
+        
+        // Rastgele renkler oluşturma fonksiyonu
+        function generateColors(count) {
+            const baseColors = [
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 206, 86, 0.7)',
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(153, 102, 255, 0.7)',
+                'rgba(255, 159, 64, 0.7)',
+                'rgba(199, 199, 199, 0.7)',
+                'rgba(83, 102, 255, 0.7)',
+                'rgba(40, 167, 69, 0.7)',
+                'rgba(253, 126, 20, 0.7)'
+            ];
+            
+            let colors = [];
+            for (let i = 0; i < count; i++) {
+                colors.push(baseColors[i % baseColors.length]);
+            }
+            return colors;
+        }
+        
+        // Dönem butonları
+        document.getElementById('weekly-btn').addEventListener('click', function() {
+            updateActiveButton(this);
+            // Burada haftalık verileri güncelleme kodu eklenebilir
+        });
+        
+        document.getElementById('monthly-btn').addEventListener('click', function() {
+            updateActiveButton(this);
+            // Burada aylık verileri güncelleme kodu eklenebilir
+        });
+        
+        document.getElementById('all-time-btn').addEventListener('click', function() {
+            updateActiveButton(this);
+            // Burada tüm zaman verilerini güncelleme kodu eklenebilir
+        });
+        
+        function updateActiveButton(btn) {
+            document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,174 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Öğrenme Adımları{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="mb-3">{{ category.name }}</h1>
+            <p class="lead">{{ category.description }}</p>
+        </div>
+        <div class="col-lg-4 text-lg-end d-flex align-items-center justify-content-lg-end">
+            {% if learning_path and learning_path.id %}
+                <a href="{% url 'learning_path' learning_path.id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i> Öğrenme Yoluna Dön
+                </a>
+            {% else %}
+                <a href="{% url 'learning_paths' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i> Öğrenme Yollarına Dön
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="progress" style="height: 20px;">
+                <div class="progress-bar" role="progressbar" 
+                     style="width: 0%" 
+                     aria-valuenow="0" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100"
+                     id="categoryProgressBar">
+                    <span id="progressPercentText">0%</span>
+                </div>
+            </div>
+            <!-- Bilgiyi gizli bir veri özniteliğine yerleştir -->
+            <div id="progressData" 
+                 data-progress="{{ category_progress.percentage|default:0 }}" 
+                 class="d-none"></div>
+        </div>
+    </div>
+    
+    <div class="learning-steps-container">
+        {% for step_progress in steps_progress %}
+            <div class="learning-step-item mb-4 {% if not step_progress.unlocked %}locked{% endif %}">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-1 text-center">
+                                <div class="step-number">
+                                    {{ step_progress.learning_step.order|add:"1" }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <h4 class="mb-2">{{ step_progress.learning_step.name }}</h4>
+                                <p class="mb-2">{{ step_progress.learning_step.description|default:"Bu adım hakkında açıklama bulunmuyor." }}</p>
+                                
+                                {% if step_progress.learning_step.step_type == 'vocabulary' %}
+                                    <span class="badge bg-primary">Kelime Öğrenme</span>
+                                {% elif step_progress.learning_step.step_type == 'matching' %}
+                                    <span class="badge bg-success">Eşleştirme</span>
+                                {% elif step_progress.learning_step.step_type == 'multiple_choice' %}
+                                    <span class="badge bg-info">Çoktan Seçmeli</span>
+                                {% elif step_progress.learning_step.step_type == 'writing' %}
+                                    <span class="badge bg-warning">Yazma</span>
+                                {% elif step_progress.learning_step.step_type == 'listening' %}
+                                    <span class="badge bg-secondary">Dinleme</span>
+                                {% elif step_progress.learning_step.step_type == 'final_quiz' %}
+                                    <span class="badge bg-danger">Final Quiz</span>
+                                {% endif %}
+                                
+                                {% if step_progress.completed %}
+                                    <span class="badge bg-success ms-2">Tamamlandı</span>
+                                    <div class="mt-2">
+                                        <small class="text-muted">Puan: {{ step_progress.score }}/{{ step_progress.max_score }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-3 text-end">
+                                {% if step_progress.unlocked %}
+                                    <a href="{% url 'learning_step' category.id step_progress.learning_step.id %}" class="btn btn-primary">
+                                        {% if step_progress.completed %}
+                                            <i class="fas fa-redo me-1"></i> Tekrar Çalış
+                                        {% else %}
+                                            <i class="fas fa-play me-1"></i> Başla
+                                        {% endif %}
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-lock me-1"></i> Kilitli
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="alert alert-info">
+                Bu kategoride henüz öğrenme adımı bulunmamaktadır.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .learning-steps-container {
+        position: relative;
+    }
+    
+    .learning-steps-container:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 25px;
+        width: 4px;
+        background-color: #e9ecef;
+        z-index: -1;
+    }
+    
+    .learning-step-item.locked .card {
+        opacity: 0.7;
+        background-color: #f8f9fa;
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin: 0 auto;
+    }
+    
+    .learning-step-item.locked .step-number {
+        background-color: #6c757d;
+    }
+</style>
+
+<script>
+    // Sayfa yüklendiğinde çalışacak kod
+    document.addEventListener('DOMContentLoaded', function() {
+        // Progress bar'ı güncelleyelim
+        updateProgressBar();
+    });
+    
+    // Progress bar'ı gizli veri özniteliğinden güncelle
+    function updateProgressBar() {
+        // Gerekli elementleri seç
+        const progressBar = document.getElementById('categoryProgressBar');
+        const progressText = document.getElementById('progressPercentText');
+        const progressData = document.getElementById('progressData');
+        
+        // Veri özniteliğinden yüzde değerini al
+        const progressPercent = progressData.getAttribute('data-progress');
+        
+        // Progress bar'ı güncelle
+        progressBar.style.width = progressPercent + '%';
+        progressBar.setAttribute('aria-valuenow', progressPercent);
+        progressText.textContent = progressPercent + '%';
+    }
+</script>
+{% endblock %} 

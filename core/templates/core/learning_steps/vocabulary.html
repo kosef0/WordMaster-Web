@@ -1,0 +1,285 @@
+<div class="learning-step vocabulary-step">
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Bu adımda {{ words|length }} yeni kelime öğreneceksiniz. Her kelime için telaffuzu dinleyebilir, örnek cümleleri inceleyebilirsiniz.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Kelime Kartları -->
+            <div class="vocabulary-cards">
+                {% for word in words %}
+                <div class="vocabulary-card card mb-4 {% if forloop.first %}active{% endif %}" id="word-card-{{ word.id }}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Kelime {{ forloop.counter }}/{{ words|length }}</span>
+                        <button type="button" class="btn btn-sm btn-outline-primary pronunciation-btn" data-word="{{ word.english }}">
+                            <i class="fas fa-volume-up"></i> Telaffuz
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h2 class="english-word">{{ word.english }}</h2>
+                                <h4 class="turkish-word text-muted">{{ word.turkish }}</h4>
+                                
+                                {% if word.part_of_speech %}
+                                <p class="part-of-speech"><em>{{ word.part_of_speech }}</em></p>
+                                {% endif %}
+                                
+                                {% if word.definition %}
+                                <div class="definition mt-3">
+                                    <strong>Tanım:</strong>
+                                    <p>{{ word.definition }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {% if word.example_sentence %}
+                                <div class="example-sentence">
+                                    <strong>Örnek Cümle:</strong>
+                                    <p><em>{{ word.example_sentence }}</em></p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if word.image %}
+                                <div class="word-image mt-3">
+                                    <img src="{{ word.image.url }}" alt="{{ word.english }}" class="img-fluid rounded">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button class="btn btn-success mark-learned" data-word-id="{{ word.id }}">
+                                <i class="fas fa-check me-2"></i> Öğrendim
+                            </button>
+                        </div>
+                    </div>
+                    <audio id="pronunciation-{{ word.id }}" class="pronunciation-audio"></audio>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Navigasyon Butonları -->
+            <div class="navigation-buttons d-flex justify-content-between mt-3">
+                <button class="btn btn-outline-primary prev-word" disabled>
+                    <i class="fas fa-arrow-left me-2"></i> Önceki
+                </button>
+                <button class="btn btn-outline-primary next-word">
+                    Sonraki <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- İlerleme Paneli -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">İlerleme</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%;" 
+                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="vocabulary-progress-bar">
+                            0%
+                        </div>
+                    </div>
+                    
+                    <div class="learned-words">
+                        <h6>Öğrenilen Kelimeler: <span id="learned-count">0</span>/{{ words|length }}</h6>
+                        <div class="word-list mt-3">
+                            {% for word in words %}
+                            <div class="word-item d-flex align-items-center mb-2" id="word-item-{{ word.id }}">
+                                <div class="word-status me-2">
+                                    <i class="far fa-circle"></i>
+                                </div>
+                                <div class="word-text">
+                                    {{ word.english }} - {{ word.turkish }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tamamla Butonu -->
+            <div class="complete-step mt-3">
+                <button class="btn btn-primary btn-lg w-100" id="complete-vocabulary" disabled>
+                    <i class="fas fa-check-circle me-2"></i> Adımı Tamamla
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .vocabulary-card {
+        display: none;
+    }
+    
+    .vocabulary-card.active {
+        display: block;
+    }
+    
+    .english-word {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .turkish-word {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .word-status .fa-circle {
+        color: #dee2e6;
+    }
+    
+    .word-status .fa-check-circle {
+        color: #28a745;
+    }
+    
+    .word-item.learned .word-text {
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const wordsData = JSON.parse('{{ words_json|escapejs }}');
+        let currentWordIndex = 0;
+        let learnedWords = [];
+        
+        // Telaffuz butonlarını ayarla
+        const pronunciationButtons = document.querySelectorAll('.pronunciation-btn');
+        pronunciationButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const word = this.getAttribute('data-word');
+                const audioElement = this.closest('.vocabulary-card').querySelector('audio');
+                
+                fetch(`/api/pronunciation/?word=${encodeURIComponent(word)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Telaffuz alınamadı');
+                        }
+                        return response.blob();
+                    })
+                    .then(audioBlob => {
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        audioElement.src = audioUrl;
+                        audioElement.play();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Telaffuz yüklenirken bir hata oluştu.');
+                    });
+            });
+        });
+        
+        // Navigasyon butonları
+        const prevButton = document.querySelector('.prev-word');
+        const nextButton = document.querySelector('.next-word');
+        
+        prevButton.addEventListener('click', function() {
+            if (currentWordIndex > 0) {
+                showWord(currentWordIndex - 1);
+            }
+        });
+        
+        nextButton.addEventListener('click', function() {
+            if (currentWordIndex < wordsData.length - 1) {
+                showWord(currentWordIndex + 1);
+            }
+        });
+        
+        // Kelime gösterme fonksiyonu
+        function showWord(index) {
+            // Aktif kelimeyi gizle
+            document.querySelector('.vocabulary-card.active').classList.remove('active');
+            
+            // Yeni kelimeyi göster
+            document.getElementById(`word-card-${wordsData[index].id}`).classList.add('active');
+            
+            // Buton durumlarını güncelle
+            prevButton.disabled = (index === 0);
+            nextButton.disabled = (index === wordsData.length - 1);
+            
+            // Güncel indeksi güncelle
+            currentWordIndex = index;
+        }
+        
+        // Öğrendim butonları
+        const learnedButtons = document.querySelectorAll('.mark-learned');
+        learnedButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const wordId = this.getAttribute('data-word-id');
+                markWordAsLearned(wordId);
+                
+                // Sonraki kelimeye geç (eğer son kelime değilse)
+                if (currentWordIndex < wordsData.length - 1) {
+                    showWord(currentWordIndex + 1);
+                }
+            });
+        });
+        
+        // Kelimeyi öğrenildi olarak işaretle
+        function markWordAsLearned(wordId) {
+            if (!learnedWords.includes(wordId)) {
+                learnedWords.push(wordId);
+                
+                // Kelime listesindeki durumu güncelle
+                const wordItem = document.getElementById(`word-item-${wordId}`);
+                wordItem.classList.add('learned');
+                wordItem.querySelector('.word-status i').className = 'fas fa-check-circle';
+                
+                // İlerleme çubuğunu güncelle
+                updateProgress();
+                
+                // Kelimeyi sunucuya kaydet
+                fetch(`/word/${wordId}/update-progress/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: 'proficiency_level=3'
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        }
+        
+        // İlerleme durumunu güncelle
+        function updateProgress() {
+            const learnedCount = learnedWords.length;
+            const totalWords = wordsData.length;
+            const percentage = Math.round((learnedCount / totalWords) * 100);
+            
+            // İlerleme çubuğunu güncelle
+            const progressBar = document.getElementById('vocabulary-progress-bar');
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}%`;
+            progressBar.setAttribute('aria-valuenow', percentage);
+            
+            // Öğrenilen kelime sayısını güncelle
+            document.getElementById('learned-count').textContent = learnedCount;
+            
+            // Tamamla butonunu etkinleştir/devre dışı bırak
+            document.getElementById('complete-vocabulary').disabled = (learnedCount < totalWords);
+        }
+        
+        // Adımı tamamla butonu
+        document.getElementById('complete-vocabulary').addEventListener('click', function() {
+            if (learnedWords.length === wordsData.length) {
+                // Adımı tamamla
+                window.completeStep(learnedWords.length, wordsData.length);
+            }
+        });
+    });
+</script> 
