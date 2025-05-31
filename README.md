@@ -25,7 +25,6 @@ WordMaster, İngilizce kelime öğrenmeyi eğlenceli ve etkili hale getiren kaps
 - **Django**: Web framework
 - **Django REST Framework**: API geliştirme
 - **SQLite**: Veritabanı
-- **MongoDB**: İkincil veritabanı
 
 ### Frontend
 - **HTML/CSS/JavaScript**: Web arayüzü
@@ -60,10 +59,6 @@ Projeyi çalıştırmadan önce `.env` dosyası oluşturmanız gerekmektedir. Ö
 DJANGO_SECRET_KEY=your-secret-key-here
 DJANGO_DEBUG=False
 DJANGO_ALLOWED_HOSTS=example.com,www.example.com
-
-# MongoDB bağlantısı
-MONGODB_URI=mongodb+srv://username:password@cluster.example.mongodb.net/dbname?retryWrites=true&w=majority
-MONGODB_DB_NAME=wordmaster
 
 # CORS ayarları
 CORS_ALLOWED_ORIGINS=https://example.com,https://www.example.com
@@ -137,13 +132,11 @@ WordMaster, mobil ve web uygulamaları için REST API sağlar:
   <img src="https://via.placeholder.com/250x500" alt="Quiz Ekranı" width="200"/>
 </div>
 
-## 🔄 Veri Senkronizasyonu
+## 🔄 Veri İşlemleri
 
-Proje, MongoDB ve SQLite arasında veri senkronizasyonu için çeşitli betikler içerir:
+Proje, veri işlemleri için çeşitli yönetim komutları içerir:
 
-- `sync_mongodb_to_sqlite.py`: MongoDB'den SQLite'a veri aktarımı
-- `import_json_to_sqlite.py`: JSON dosyalarından SQLite'a veri aktarımı
-- `clean_duplicates.py`: Yinelenen kayıtları temizleme
+- `python manage.py populate_data`: Örnek verilerle veritabanını doldurur
 
 ## 🔒 Güvenlik
 
@@ -165,8 +158,7 @@ Canlı ortama geçmeden önce aşağıdaki adımları takip edin:
 2. DEBUG modunu kapatın (`DJANGO_DEBUG=False`)
 3. ALLOWED_HOSTS değerini sadece gerçek domain adlarınızla sınırlayın
 4. HTTPS ayarlarını etkinleştirin
-5. MongoDB bağlantı bilgilerinizi güvenceye alın
-6. CORS ayarlarını sadece gerekli domainlerle sınırlayın
+5. CORS ayarlarını sadece gerekli domainlerle sınırlayın
 
 ## 👥 Katkıda Bulunma
 

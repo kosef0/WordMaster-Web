@@ -15,7 +15,7 @@ django-permissions-policy>=4.17.0,<5.0.0  # Permissions-Policy header
 django-referrer-policy>=1.0,<2.0  # Referrer-Policy header
 
 # Veritabanı
-pymongo>=4.5.0,<5.0.0
+# MongoDB artık kullanılmıyor
 
 # Görüntü işleme
 Pillow>=10.0.0,<11.0.0

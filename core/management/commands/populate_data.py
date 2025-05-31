@@ -1,26 +1,12 @@
 from django.core.management.base import BaseCommand
-from django.conf import settings
-import pymongo
-from bson.objectid import ObjectId
-import os
-import json
+from core.models import Category, Word
 
 class Command(BaseCommand):
-    help = 'MongoDB veritabanını örnek verilerle doldurur'
+    help = 'SQLite veritabanını örnek verilerle doldurur'
 
     def handle(self, *args, **kwargs):
-        # MongoDB bağlantısı
-        client = pymongo.MongoClient(
-            "mongodb+srv://kosef:k132465f@clusterwordmaster.cle0svh.mongodb.net/wmmobil?retryWrites=true&w=majority"
-        )
-        db = client["wmmobil"]
-        
         # Kategorileri ekle
         self.stdout.write(self.style.SUCCESS('Kategoriler ekleniyor...'))
-        categories = db["categories"]
-        
-        # Önceki verileri temizleyelim
-        categories.delete_many({})
         
         category_data = [
             {
@@ -50,18 +36,25 @@ class Command(BaseCommand):
             }
         ]
         
-        category_ids = {}
-        for category in category_data:
-            result = categories.insert_one(category)
-            category_ids[category["name"]] = result.inserted_id
-            self.stdout.write(f"Kategori eklendi: {category['name']}")
+        categories = {}
+        for cat_data in category_data:
+            category, created = Category.objects.get_or_create(
+                name=cat_data["name"],
+                defaults={
+                    "description": cat_data["description"],
+                    "image": cat_data["image"],
+                    "difficulty_level": 1,
+                    "order": 0
+                }
+            )
+            categories[cat_data["name"]] = category
+            if created:
+                self.stdout.write(f"Kategori eklendi: {category.name}")
+            else:
+                self.stdout.write(f"Kategori güncellendi: {category.name}")
         
         # Kelimeleri ekle
         self.stdout.write(self.style.SUCCESS('Kelimeler ekleniyor...'))
-        words = db["words"]
-        
-        # Önceki verileri temizleyelim
-        words.delete_many({})
         
         # İş İngilizcesi kategorisine kelimeler
         business_words = [
@@ -72,7 +65,7 @@ class Command(BaseCommand):
             {"english": "stakeholder", "turkish": "paydaş", "definition": "A person with an interest or concern in something", "example_sentence": "We need to inform all stakeholders about the changes."}
         ]
         
-        self._add_words_to_category(words, business_words, category_ids["İş İngilizcesi"])
+        self._add_words_to_category(business_words, categories["İş İngilizcesi"])
         
         # Günlük Konuşma kategorisine kelimeler
         daily_words = [
@@ -83,7 +76,7 @@ class Command(BaseCommand):
             {"english": "anyway", "turkish": "neyse", "definition": "Used to change the subject or resume a subject", "example_sentence": "Anyway, let's talk about something else."}
         ]
         
-        self._add_words_to_category(words, daily_words, category_ids["Günlük Konuşma"])
+        self._add_words_to_category(daily_words, categories["Günlük Konuşma"])
         
         # Seyahat İngilizcesi kategorisine kelimeler
         travel_words = [
@@ -94,7 +87,7 @@ class Command(BaseCommand):
             {"english": "reservation", "turkish": "rezervasyon", "definition": "An arrangement to have something held for someone", "example_sentence": "I made a reservation at that restaurant."}
         ]
         
-        self._add_words_to_category(words, travel_words, category_ids["Seyahat İngilizcesi"])
+        self._add_words_to_category(travel_words, categories["Seyahat İngilizcesi"])
         
         # Akademik İngilizce kategorisine kelimeler
         academic_words = [
@@ -105,7 +98,7 @@ class Command(BaseCommand):
             {"english": "paradigm", "turkish": "paradigma", "definition": "A typical example or pattern of something", "example_sentence": "This discovery created a new paradigm in physics."}
         ]
         
-        self._add_words_to_category(words, academic_words, category_ids["Akademik İngilizce"])
+        self._add_words_to_category(academic_words, categories["Akademik İngilizce"])
         
         # Teknoloji Terimleri kategorisine kelimeler
         tech_words = [
@@ -116,12 +109,24 @@ class Command(BaseCommand):
             {"english": "cloud computing", "turkish": "bulut bilişim", "definition": "The practice of using remote servers for storing data", "example_sentence": "Many businesses are moving to cloud computing."}
         ]
         
-        self._add_words_to_category(words, tech_words, category_ids["Teknoloji Terimleri"])
+        self._add_words_to_category(tech_words, categories["Teknoloji Terimleri"])
         
         self.stdout.write(self.style.SUCCESS('Veri doldurma işlemi tamamlandı!'))
     
-    def _add_words_to_category(self, collection, words_data, category_id):
-        for word in words_data:
-            word["category_id"] = category_id
-            result = collection.insert_one(word)
-            self.stdout.write(f"Kelime eklendi: {word['english']} - {word['turkish']}") 
+    def _add_words_to_category(self, words_data, category):
+        for word_data in words_data:
+            word, created = Word.objects.get_or_create(
+                english=word_data["english"],
+                category=category,
+                defaults={
+                    "turkish": word_data["turkish"],
+                    "definition": word_data.get("definition", ""),
+                    "example_sentence": word_data.get("example_sentence", ""),
+                    "image": "",  # Varsayılan boş bırakıldı
+                    "difficulty_level": 1
+                }
+            )
+            if created:
+                self.stdout.write(f"Kelime eklendi: {word.english} - {word.turkish}")
+            else:
+                self.stdout.write(f"Kelime güncellendi: {word.english} - {word.turkish}") 

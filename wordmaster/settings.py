@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import pymongo
 
 # .env dosyasını yükle
 load_dotenv()
@@ -122,15 +121,7 @@ DATABASES = {
     }
 }
 
-# MongoDB bağlantısı
-MONGODB_URI = os.environ.get('MONGODB_URI', '')
-if MONGODB_URI:
-    MONGODB_CLIENT = pymongo.MongoClient(MONGODB_URI)
-    MONGODB_DATABASE = MONGODB_CLIENT[os.environ.get('MONGODB_DB_NAME', 'wmmobil')]
-else:
-    MONGODB_CLIENT = None
-    MONGODB_DATABASE = None
-
+# MongoDB ayarları kaldırıldı
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

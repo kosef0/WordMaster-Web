@@ -8,7 +8,8 @@ class Category(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     difficulty_level = models.IntegerField(default=1)  # 1-5 zorluk seviyesi
     order = models.IntegerField(default=0)  # Kategorilerin sıralama düzeni
-    mongo_id = models.CharField(max_length=24, blank=True, null=True, db_index=True)  # MongoDB ObjectId'yi saklamak için
+    # Bu alan eski MongoDB entegrasyonundan kalmıştır, şu anda kullanılmamaktadır
+    mongo_id = models.CharField(max_length=24, blank=True, null=True, db_index=True)
     
     def __str__(self):
         return self.name
