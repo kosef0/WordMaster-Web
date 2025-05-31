@@ -125,13 +125,20 @@ WordMaster, mobil ve web uygulamaları için REST API sağlar:
 - `/api/game-scores/`: Oyun skorları
 
 ## 🖼️ Ekran Görüntüleri
-
-<div align="center">
-  <img src="https://via.placeholder.com/250x500" alt="Ana Sayfa" width="200"/>
-  <img src="https://via.placeholder.com/250x500" alt="Kategori Listesi" width="200"/>
-  <img src="https://via.placeholder.com/250x500" alt="Quiz Ekranı" width="200"/>
-</div>
-
+![Ekran görüntüsü 2025-05-28 185816](https://github.com/user-attachments/assets/e2e63005-5ae3-4ecd-ba4e-df1a50be3cdc)
+![Ekra![Ekran görüntüsü 2025-05-28 185658](https://github.com/user-attachments/assets/2b5b0899-0462-413b-a939-070aee41d9da)
+![Ekran görüntüsü 2025-05-28 185637](https://github.com/user-attachments/assets/f7ec894f-6b50-4c96-8608-28efaddaebd7)
+![Ekran görüntüsü 2025-05-28 185615](https://github.com/user-attachments/assets/ccace9fa-ae0f-4474-b6e0-b144999058c6)
+![Ekran görüntüsü 2025-05-28 185558](https://github.com/user-attachments/assets/837ccdd2-0c79-4798-b0be-a383d3188d65)
+![Ekran görüntüsü 2025-05-28 185339](https://github.com/user-attachments/assets/f97fedcb-b281-4040-8d58-3f95a8e70f05)
+![Ekran görüntüsü 2025-05-28 185837](https://github.com/user-attachments/assets/e4fd2252-bafd-4d33-8846-61b4073f5056)
+n görüntüsü 2025-05-28 185722](https://github.com/user-attachments/assets/7f22c91d-00d7-46ce-8e20-a56e70773645)
+![Ekran görüntüsü 2025-05-25 151052](https://github.com/user-attachments/assets/612763d9-e1a2-4c8d-a487-f57ca7bf52d6)
+![Ekran görüntüsü 2025-05-25 151109](https://github.com/user-attachments/assets/c6b24dd1-6b09-46de-b147-118522f92c5a)
+![Ekran görüntüsü 2025-05-25 195456](https://github.com/user-attachments/assets/26206c38-8590-42b3-b1ef-660640ab5f55)
+![Ekran görüntüsü 2025-05-25 195446](https://github.com/user-attachments/assets/cfa10b31-fdd7-4603-8c44-93e2375d257a)
+![Ekran görüntüsü 2025-05-25 195431](https://github.com/user-attachments/assets/bce27daa-8ff6-4a92-ba47-647cc39853d1)
+![Ekran görüntüsü 2025-05-25 195505](https://github.com/user-attachments/assets/68fc3632-5d3e-4d73-b0be-9e80d6a90dc6)
 ## 🔄 Veri İşlemleri
 
 Proje, veri işlemleri için çeşitli yönetim komutları içerir:
